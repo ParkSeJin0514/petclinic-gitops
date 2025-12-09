@@ -40,7 +40,7 @@ images:
   
   - name: springcommunity/spring-petclinic-api-gateway
     newName: 946775837287.dkr.ecr.ap-northeast-2.amazonaws.com/petclinic-msa/petclinic-api-gateway
-    newTag: "1"
+    newTag: "3"
   
   - name: springcommunity/spring-petclinic-admin-server
     newName: 946775837287.dkr.ecr.ap-northeast-2.amazonaws.com/petclinic-msa/petclinic-admin-server
