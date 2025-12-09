@@ -132,6 +132,11 @@ kubectl apply -f manifests/06-api-gateway.yaml
 argocd app sync petclinic
 ```
 
+### ArgoCD edit
+```
+kubectl edit configmap argocd-cm -n argocd
+```
+
 ---
 
 ## 🏷️ 이미지 태그 업데이트
