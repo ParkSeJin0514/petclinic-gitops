@@ -1,0 +1,14 @@
+---
+# Petclinic Microservices Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: petclinic
+  labels:
+    name: petclinic
+    project: petclinic-microservices
+# ============================================================================
+# DB Secret은 External Secrets Operator가 자동 생성합니다.
+# - 08-cluster-secret-store.yaml: AWS Secrets Manager 연결
+# - 09-external-secret.yaml: petclinic-db-secret 자동 동기화
+# ============================================================================
