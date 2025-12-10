@@ -164,7 +164,7 @@ spec:
             - name: GF_SECURITY_ADMIN_USER
               value: "admin"
             - name: GF_SECURITY_ADMIN_PASSWORD
-              value: "admin"  # 실제 운영에서는 Secret으로 관리
+              value: "admin"
             - name: GF_SERVER_ROOT_URL
               value: "http://localhost:3000"
           volumeMounts:
@@ -202,6 +202,7 @@ metadata:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/load-balancer-name: petclinic-monitoring-alb
+    alb.ingress.kubernetes.io/subnets: subnet-04b054c038182c328,subnet-00c4ceb512cccd65a
     alb.ingress.kubernetes.io/group.name: petclinic-monitoring
     alb.ingress.kubernetes.io/group.order: '2'
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
@@ -237,6 +238,7 @@ metadata:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/load-balancer-name: petclinic-monitoring-alb
+    alb.ingress.kubernetes.io/subnets: subnet-04b054c038182c328,subnet-00c4ceb512cccd65a
     alb.ingress.kubernetes.io/group.name: petclinic-monitoring
     alb.ingress.kubernetes.io/group.order: '1'
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
