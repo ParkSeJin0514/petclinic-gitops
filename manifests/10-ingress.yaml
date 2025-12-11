@@ -12,7 +12,6 @@ metadata:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/load-balancer-name: petclinic-microservices-alb
-    alb.ingress.kubernetes.io/subnets: subnet-04b054c038182c328,subnet-00c4ceb512cccd65a
     
     # HTTPS 설정 (ACM 인증서 ARN을 실제 값으로 교체)
     # alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-northeast-2:946775837287:certificate/your-cert-id
