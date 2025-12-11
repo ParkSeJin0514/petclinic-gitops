@@ -1,8 +1,8 @@
-# PetClinic GitOps
+# 🐾 PetClinic GitOps
 
 ArgoCD 기반 PetClinic 애플리케이션 배포 매니페스트 (Kustomize)
 
-## 아키텍처
+## 🏛️ 아키텍처
 
 ```
 ArgoCD
@@ -14,7 +14,7 @@ ArgoCD
                     └── kustomization.yaml
 ```
 
-## 디렉토리 구조
+## 📁 디렉토리 구조
 
 ```
 ├── kustomization.yaml          # Kustomize 설정
@@ -35,7 +35,7 @@ ArgoCD
     └── 13-monitoring-cluster.yaml
 ```
 
-## 배포 방법
+## 🚀 배포 방법
 
 ### ArgoCD 자동 배포
 platform-gitops의 `petclinic-app.yaml`에서 이 저장소를 참조
@@ -52,7 +52,7 @@ kubectl apply -k .
 kubectl delete -k .
 ```
 
-## 주요 기능
+## ⚙️ 주요 기능
 
 | 기능 | 설명 |
 |------|------|
@@ -60,7 +60,7 @@ kubectl delete -k .
 | ALB Ingress | AWS Load Balancer Controller로 ALB 생성 |
 | 모니터링 | Prometheus + Grafana (앱/클러스터 레벨) |
 
-## 이미지 태그 변경
+## 🏷️ 이미지 태그 변경
 
 `kustomization.yaml` 수정:
 ```yaml
@@ -69,7 +69,9 @@ images:
     newTag: "2.0"  # 변경할 태그
 ```
 
-## 연관 저장소
+## 🔗 연관 저장소
 
-- **petclinic-dev**: 소스 코드 + CI/CD (Jenkins)
-- **platform-gitops**: 플랫폼 컴포넌트 (ALB Controller, EFS CSI 등)
+| 저장소 | 설명 |
+|--------|------|
+| **petclinic-dev** | 소스 코드 + CI/CD (Jenkins) |
+| **platform-gitops** | 플랫폼 컴포넌트 (ALB Controller, EFS CSI 등) |
