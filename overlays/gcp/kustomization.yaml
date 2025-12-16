@@ -12,23 +12,23 @@ patches:
 
 images:
   - name: springcommunity/spring-petclinic-config-server
-    newName: 946775837287.dkr.ecr.ap-northeast-2.amazonaws.com/petclinic-msa/petclinic-config-server
+    newName: asia-northeast3-docker.pkg.dev/kdt2-final-project-t1/petclinic-msa/petclinic-config-server
     newTag: "4"
   - name: springcommunity/spring-petclinic-discovery-server
-    newName: 946775837287.dkr.ecr.ap-northeast-2.amazonaws.com/petclinic-msa/petclinic-discovery-server
+    newName: asia-northeast3-docker.pkg.dev/kdt2-final-project-t1/petclinic-msa/petclinic-discovery-server
     newTag: "4"
   - name: springcommunity/spring-petclinic-customers-service
-    newName: 946775837287.dkr.ecr.ap-northeast-2.amazonaws.com/petclinic-msa/petclinic-customers-service
+    newName: asia-northeast3-docker.pkg.dev/kdt2-final-project-t1/petclinic-msa/petclinic-customers-service
     newTag: "4"
   - name: springcommunity/spring-petclinic-visits-service
-    newName: 946775837287.dkr.ecr.ap-northeast-2.amazonaws.com/petclinic-msa/petclinic-visits-service
+    newName: asia-northeast3-docker.pkg.dev/kdt2-final-project-t1/petclinic-msa/petclinic-visits-service
     newTag: "4"
   - name: springcommunity/spring-petclinic-vets-service
-    newName: 946775837287.dkr.ecr.ap-northeast-2.amazonaws.com/petclinic-msa/petclinic-vets-service
+    newName: asia-northeast3-docker.pkg.dev/kdt2-final-project-t1/petclinic-msa/petclinic-vets-service
     newTag: "4"
   - name: springcommunity/spring-petclinic-api-gateway
-    newName: 946775837287.dkr.ecr.ap-northeast-2.amazonaws.com/petclinic-msa/petclinic-api-gateway
+    newName: asia-northeast3-docker.pkg.dev/kdt2-final-project-t1/petclinic-msa/petclinic-api-gateway
     newTag: "8"
   - name: springcommunity/spring-petclinic-admin-server
-    newName: 946775837287.dkr.ecr.ap-northeast-2.amazonaws.com/petclinic-msa/petclinic-admin-server
+    newName: asia-northeast3-docker.pkg.dev/kdt2-final-project-t1/petclinic-msa/petclinic-admin-server
     newTag: "4"
