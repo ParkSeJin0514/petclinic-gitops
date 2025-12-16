@@ -1,34 +1,31 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: petclinic
-
 resources:
   - ../../base
   - cluster-secret-store.yaml
   - external-secret.yaml
-
 patches:
   - path: ingress-patch.yaml
-
 images:
   - name: springcommunity/spring-petclinic-config-server
     newName: asia-northeast3-docker.pkg.dev/kdt2-final-project-t1/petclinic-msa/petclinic-config-server
-    newTag: "4"
+    newTag: "9"
   - name: springcommunity/spring-petclinic-discovery-server
     newName: asia-northeast3-docker.pkg.dev/kdt2-final-project-t1/petclinic-msa/petclinic-discovery-server
-    newTag: "4"
+    newTag: "9"
   - name: springcommunity/spring-petclinic-customers-service
     newName: asia-northeast3-docker.pkg.dev/kdt2-final-project-t1/petclinic-msa/petclinic-customers-service
-    newTag: "4"
+    newTag: "9"
   - name: springcommunity/spring-petclinic-visits-service
     newName: asia-northeast3-docker.pkg.dev/kdt2-final-project-t1/petclinic-msa/petclinic-visits-service
-    newTag: "4"
+    newTag: "9"
   - name: springcommunity/spring-petclinic-vets-service
     newName: asia-northeast3-docker.pkg.dev/kdt2-final-project-t1/petclinic-msa/petclinic-vets-service
-    newTag: "4"
+    newTag: "9"
   - name: springcommunity/spring-petclinic-api-gateway
     newName: asia-northeast3-docker.pkg.dev/kdt2-final-project-t1/petclinic-msa/petclinic-api-gateway
-    newTag: "8"
+    newTag: "9"
   - name: springcommunity/spring-petclinic-admin-server
     newName: asia-northeast3-docker.pkg.dev/kdt2-final-project-t1/petclinic-msa/petclinic-admin-server
-    newTag: "4"
+    newTag: "9"
