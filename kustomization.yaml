@@ -1,8 +1,6 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-
 namespace: petclinic
-
 resources:
   - manifests/00-namespace.yaml
   - manifests/01-config-server.yaml
@@ -16,32 +14,25 @@ resources:
   - manifests/09-external-secret.yaml
   - manifests/10-ingress.yaml
   - manifests/11-monitoring.yaml
-
 images:
   - name: springcommunity/spring-petclinic-config-server
     newName: 946775837287.dkr.ecr.ap-northeast-2.amazonaws.com/petclinic-msa/petclinic-config-server
     newTag: "4"
-  
   - name: springcommunity/spring-petclinic-discovery-server
     newName: 946775837287.dkr.ecr.ap-northeast-2.amazonaws.com/petclinic-msa/petclinic-discovery-server
     newTag: "4"
-  
   - name: springcommunity/spring-petclinic-customers-service
     newName: 946775837287.dkr.ecr.ap-northeast-2.amazonaws.com/petclinic-msa/petclinic-customers-service
     newTag: "4"
-  
   - name: springcommunity/spring-petclinic-visits-service
     newName: 946775837287.dkr.ecr.ap-northeast-2.amazonaws.com/petclinic-msa/petclinic-visits-service
     newTag: "4"
-  
   - name: springcommunity/spring-petclinic-vets-service
     newName: 946775837287.dkr.ecr.ap-northeast-2.amazonaws.com/petclinic-msa/petclinic-vets-service
     newTag: "4"
-  
   - name: springcommunity/spring-petclinic-api-gateway
     newName: 946775837287.dkr.ecr.ap-northeast-2.amazonaws.com/petclinic-msa/petclinic-api-gateway
-    newTag: "5"
-  
+    newTag: "7"
   - name: springcommunity/spring-petclinic-admin-server
     newName: 946775837287.dkr.ecr.ap-northeast-2.amazonaws.com/petclinic-msa/petclinic-admin-server
     newTag: "4"
