@@ -204,3 +204,5 @@ kubectl get configmap petclinic-config -n petclinic -o yaml
 | **petclinic-dev** | 소스 코드 + CI/CD (GitHub Actions) |
 | **platform-gitops** | 플랫폼 컴포넌트 (ALB Controller, Karpenter 등) |
 | **platform-dev** | Terraform 인프라 (EKS, RDS, VPC) |
+
+#test
