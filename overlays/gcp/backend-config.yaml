@@ -1,0 +1,47 @@
+# ============================================================================
+# GCP BackendConfig - Health Check 설정
+# ============================================================================
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: grafana-backend-config
+  namespace: petclinic
+spec:
+  healthCheck:
+    checkIntervalSec: 15
+    timeoutSec: 5
+    healthyThreshold: 2
+    unhealthyThreshold: 2
+    type: HTTP
+    requestPath: /api/health
+    port: 3000
+---
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: prometheus-backend-config
+  namespace: petclinic
+spec:
+  healthCheck:
+    checkIntervalSec: 15
+    timeoutSec: 5
+    healthyThreshold: 2
+    unhealthyThreshold: 2
+    type: HTTP
+    requestPath: /-/healthy
+    port: 9090
+---
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: api-gateway-backend-config
+  namespace: petclinic
+spec:
+  healthCheck:
+    checkIntervalSec: 15
+    timeoutSec: 5
+    healthyThreshold: 2
+    unhealthyThreshold: 2
+    type: HTTP
+    requestPath: /actuator/health
+    port: 8080

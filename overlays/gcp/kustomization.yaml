@@ -5,8 +5,10 @@ resources:
   - ../../base
   - cluster-secret-store.yaml
   - external-secret.yaml
+  - backend-config.yaml
 patches:
   - path: ingress-patch.yaml
+  - path: service-patch.yaml
 images:
   - name: springcommunity/spring-petclinic-config-server
     newName: asia-northeast3-docker.pkg.dev/kdt2-final-project-t1/petclinic-msa/petclinic-config-server
