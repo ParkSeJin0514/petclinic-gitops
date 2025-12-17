@@ -70,7 +70,9 @@ petclinic-gitops/
 │       ├── kustomization.yaml      # Artifact Registry 이미지
 │       ├── cluster-secret-store.yaml # GCP Secret Manager
 │       ├── external-secret.yaml    # petclinic-dr-db-credentials
-│       └── ingress-patch.yaml      # GKE Ingress 패치
+│       ├── ingress-patch.yaml      # GKE Ingress 패치
+│       ├── backend-config.yaml     # GCP Health Check 설정
+│       └── service-patch.yaml      # Service에 BackendConfig 연결
 ```
 
 ## ☁️ Multi-Cloud 지원
@@ -181,6 +183,42 @@ images:
   - name: springcommunity/spring-petclinic-config-server
     newName: <registry>/petclinic-config-server
     newTag: "9"  # 태그 변경
+```
+
+## 🔧 GCP BackendConfig (Health Check)
+
+GCP GCE Ingress는 기본적으로 `/` 경로로 Health Check를 수행합니다.
+Grafana, Prometheus 등은 별도의 Health Check 경로가 필요하므로 **BackendConfig**를 사용합니다.
+
+### BackendConfig 구성 (overlays/gcp/backend-config.yaml)
+
+| 서비스 | Health Check Path | Port |
+|--------|------------------|------|
+| Grafana | `/api/health` | 3000 |
+| Prometheus | `/-/healthy` | 9090 |
+| API Gateway | `/actuator/health` | 8080 |
+
+### Service 연결 (overlays/gcp/service-patch.yaml)
+
+```yaml
+metadata:
+  annotations:
+    cloud.google.com/backend-config: '{"default": "grafana-backend-config"}'
+```
+
+Service에 위 annotation을 추가하면 GCP가 BackendConfig의 Health Check 설정을 사용합니다.
+
+### 확인 방법
+
+```bash
+# BackendConfig 확인
+kubectl get backendconfig -n petclinic
+
+# Service annotation 확인
+kubectl get svc grafana-server -n petclinic -o jsonpath='{.metadata.annotations}'
+
+# Ingress Backend 상태 확인
+kubectl describe ingress grafana-ingress -n petclinic | grep -i backend
 ```
 
 ## 🔧 트러블슈팅
