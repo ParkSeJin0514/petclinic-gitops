@@ -1,11 +1,5 @@
 # ============================================================================
-# Petclinic Ingress - GKE Ingress (통합)
-# ============================================================================
-# 모든 서비스를 하나의 Ingress로 통합
-# - /           : API Gateway (PetClinic 메인)
-# - /admin      : Admin Server
-# - /grafana    : Grafana
-# - /prometheus : Prometheus
+# Petclinic Ingress - GKE Ingress
 # ============================================================================
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -33,7 +27,23 @@ spec:
                 name: admin-server
                 port:
                   number: 9090
-          - path: /grafana
+---
+# ============================================================================
+# Monitoring Ingress - GKE Ingress (Grafana + Prometheus 통합)
+# ============================================================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: monitoring-ingress
+  namespace: petclinic
+  annotations:
+    kubernetes.io/ingress.class: gce
+spec:
+  ingressClassName: gce
+  rules:
+    - http:
+        paths:
+          - path: /
             pathType: Prefix
             backend:
               service:
