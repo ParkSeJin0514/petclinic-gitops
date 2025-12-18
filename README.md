@@ -385,6 +385,55 @@ gcloud projects add-iam-policy-binding PROJECT_ID \
   --role="roles/artifactregistry.reader"
 ```
 
+### HPA 메모리 사용률이 100% 초과
+
+**원인**: Java 애플리케이션의 힙 메모리가 컨테이너 메모리 limit을 초과
+
+**증상**:
+```bash
+$ kubectl get hpa -n petclinic
+NAME                     REFERENCE                       TARGETS           MINPODS   MAXPODS
+customers-service-hpa    Deployment/customers-service    101%/80%, 15%/70%   2         8
+```
+
+**해결**: 메모리 limit 증가 + JAVA_OPTS로 힙 메모리 제한
+
+```yaml
+# base/manifests/0X-service.yaml
+resources:
+  requests:
+    cpu: 200m
+    memory: 512Mi      # 256Mi → 512Mi
+  limits:
+    cpu: 1000m         # 500m → 1000m
+    memory: 768Mi      # 512Mi → 768Mi
+
+env:
+  - name: JAVA_OPTS
+    value: "-Xmx512m -Xms256m"  # 힙 메모리를 limit의 70%로 제한
+```
+
+**적용된 서비스**:
+
+| 서비스 | Memory Request | Memory Limit | JAVA_OPTS |
+|--------|---------------|--------------|-----------|
+| customers-service | 512Mi | 768Mi | -Xmx512m -Xms256m |
+| visits-service | 512Mi | 768Mi | -Xmx512m -Xms256m |
+| vets-service | 512Mi | 768Mi | -Xmx512m -Xms256m |
+| api-gateway | 512Mi | 768Mi | -Xmx512m -Xms256m |
+
+**확인**:
+```bash
+# HPA 메모리 사용률 확인 (70-80% 정상)
+kubectl get hpa -n petclinic
+
+# Pod 실제 메모리 사용량 확인
+kubectl top pods -n petclinic
+
+# Pod 재시작 후 적용 확인
+kubectl rollout restart deployment -n petclinic --all
+```
+
 ### External Secret 실패
 
 **확인**:
