@@ -310,12 +310,14 @@ Karpenter: "Pending Pod 감지! 새 노드 프로비저닝"
 
 ### HPA 적용 대상 (base/manifests/08-hpa.yaml)
 
-| 서비스 | minReplicas | maxReplicas | CPU 임계값 | Memory 임계값 |
-|--------|-------------|-------------|------------|---------------|
-| api-gateway | 2 | 10 | 70% | 80% |
-| customers-service | 2 | 8 | 70% | 80% |
-| visits-service | 2 | 8 | 70% | 80% |
-| vets-service | 2 | 8 | 70% | 80% |
+| 서비스 | minReplicas | maxReplicas | CPU 임계값 |
+|--------|-------------|-------------|------------|
+| api-gateway | 2 | 10 | 70% |
+| customers-service | 2 | 8 | 70% |
+| visits-service | 2 | 8 | 70% |
+| vets-service | 2 | 8 | 70% |
+
+> **참고**: Memory 기반 스케일링은 제거됨 (JVM 힙 특성상 CPU 기반이 더 효과적)
 
 ### HPA 미적용 서비스
 
@@ -330,7 +332,7 @@ Karpenter: "Pending Pod 감지! 새 노드 프로비저닝"
 ### 스케일링 정책
 
 **Scale Up (확장)**
-- 안정화 대기 시간: 0초 (즉시 확장)
+- 안정화 대기 시간: 180초 (3분 대기 후 확장)
 - 최대 100% 증가 또는 4개 Pod 추가 (15초마다)
 
 **Scale Down (축소)**
