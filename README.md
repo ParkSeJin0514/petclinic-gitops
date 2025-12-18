@@ -251,8 +251,8 @@ Pod들이 Karpenter 노드에만 스케줄링됨
 | vets-service | 수의사 정보 서비스 |
 | api-gateway | API Gateway |
 | admin-server | Spring Boot Admin |
-| prometheus | 메트릭 수집 |
-| grafana | 대시보드 |
+| prometheus-server | 메트릭 수집 |
+| grafana-server | 대시보드 |
 
 ### Karpenter NodePool 설정 (platform-gitops)
 
