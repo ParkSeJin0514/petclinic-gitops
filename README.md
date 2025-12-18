@@ -312,12 +312,12 @@ Karpenter: "Pending Pod 감지! 새 노드 프로비저닝"
 
 | 서비스 | minReplicas | maxReplicas | CPU 임계값 |
 |--------|-------------|-------------|------------|
-| api-gateway | 2 | 10 | 70% |
-| customers-service | 2 | 8 | 70% |
-| visits-service | 2 | 8 | 70% |
-| vets-service | 2 | 8 | 70% |
+| api-gateway | 2 | 4 | 70% |
+| customers-service | 2 | 4 | 70% |
+| visits-service | 2 | 4 | 70% |
+| vets-service | 2 | 4 | 70% |
 
-> **참고**: Memory 기반 스케일링은 제거됨 (JVM 힙 특성상 CPU 기반이 더 효과적)
+> **참고**: maxReplicas를 4로 제한하여 /24 서브넷 IP 고갈 방지
 
 ### HPA 미적용 서비스
 
@@ -333,7 +333,7 @@ Karpenter: "Pending Pod 감지! 새 노드 프로비저닝"
 
 **Scale Up (확장)**
 - 안정화 대기 시간: 180초 (3분 대기 후 확장)
-- 최대 100% 증가 또는 4개 Pod 추가 (15초마다)
+- 최대 100% 증가 또는 2개 Pod 추가 (15초마다)
 
 **Scale Down (축소)**
 - 안정화 대기 시간: 300초 (5분 대기)
@@ -351,6 +351,27 @@ kubectl describe hpa api-gateway-hpa -n petclinic
 # 현재 Pod 수와 메트릭 확인
 kubectl top pods -n petclinic
 ```
+
+## 🩺 Health Check (Probe) 설정
+
+부하 시 Pod 재시작을 방지하기 위해 Probe timeout을 여유있게 설정합니다.
+
+### Probe 설정 (4개 서비스 동일)
+
+| Probe | 항목 | 값 | 설명 |
+|-------|------|-----|------|
+| **Liveness** | initialDelaySeconds | 200 | 앱 시작 대기 |
+| | periodSeconds | 10 | 체크 주기 |
+| | timeoutSeconds | 10 | 응답 대기 |
+| | failureThreshold | 20 | 실패 허용 횟수 |
+| **Readiness** | initialDelaySeconds | 120 | 앱 시작 대기 |
+| | periodSeconds | 10 | 체크 주기 |
+| | timeoutSeconds | 10 | 응답 대기 |
+| | failureThreshold | 10 | 실패 허용 횟수 |
+
+> **참고**: timeout을 10초로 설정하여 부하 시에도 health check 실패를 방지
+
+---
 
 ## 🔧 트러블슈팅
 
@@ -404,11 +425,11 @@ customers-service-hpa    Deployment/customers-service    101%/80%, 15%/70%   2  
 # base/manifests/0X-service.yaml
 resources:
   requests:
-    cpu: 200m
-    memory: 512Mi      # 256Mi → 512Mi
+    cpu: 100m
+    memory: 512Mi
   limits:
-    cpu: 1000m         # 500m → 1000m
-    memory: 768Mi      # 512Mi → 768Mi
+    cpu: 500m
+    memory: 768Mi
 
 env:
   - name: JAVA_OPTS
@@ -417,12 +438,12 @@ env:
 
 **적용된 서비스**:
 
-| 서비스 | Memory Request | Memory Limit | JAVA_OPTS |
-|--------|---------------|--------------|-----------|
-| customers-service | 512Mi | 768Mi | -Xmx512m -Xms256m |
-| visits-service | 512Mi | 768Mi | -Xmx512m -Xms256m |
-| vets-service | 512Mi | 768Mi | -Xmx512m -Xms256m |
-| api-gateway | 512Mi | 768Mi | -Xmx512m -Xms256m |
+| 서비스 | CPU Req/Limit | Memory Req/Limit | JAVA_OPTS |
+|--------|---------------|------------------|-----------|
+| customers-service | 100m / 500m | 512Mi / 768Mi | -Xmx512m -Xms256m |
+| visits-service | 100m / 500m | 512Mi / 768Mi | -Xmx512m -Xms256m |
+| vets-service | 100m / 500m | 512Mi / 768Mi | -Xmx512m -Xms256m |
+| api-gateway | 100m / 500m | 512Mi / 768Mi | -Xmx512m -Xms256m |
 
 **확인**:
 ```bash
