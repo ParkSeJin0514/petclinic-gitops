@@ -46,24 +46,24 @@ spec:
               cpu: 1000m
               memory: 768Mi
 
-          # Health Checks
+          # Health Checks (부하 시 타임아웃 방지를 위해 여유있게 설정)
           livenessProbe:
             httpGet:
               path: /actuator/health
               port: 8082
             initialDelaySeconds: 200
             periodSeconds: 10
-            timeoutSeconds: 5
-            failureThreshold: 15
-          
+            timeoutSeconds: 10
+            failureThreshold: 20
+
           readinessProbe:
             httpGet:
               path: /actuator/health
               port: 8082
             initialDelaySeconds: 120
-            periodSeconds: 5
-            timeoutSeconds: 3
-            failureThreshold: 5
+            periodSeconds: 10
+            timeoutSeconds: 10
+            failureThreshold: 10
           
           # Environment Variables
           env:
