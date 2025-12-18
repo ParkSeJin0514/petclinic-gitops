@@ -30,10 +30,10 @@ spec:
           resources:
             requests:
               cpu: 200m
-              memory: 256Mi
-            limits:
-              cpu: 500m
               memory: 512Mi
+            limits:
+              cpu: 1000m
+              memory: 768Mi
 
           # Health Check
           livenessProbe:
@@ -54,6 +54,10 @@ spec:
             failureThreshold: 5
 
           env:
+            # JVM 메모리 설정 (컨테이너 limit의 70%)
+            - name: JAVA_OPTS
+              value: "-Xmx512m -Xms256m"
+
             # 프로필: kubernetes + mysql
             - name: SPRING_PROFILES_ACTIVE
               value: "kubernetes,mysql"

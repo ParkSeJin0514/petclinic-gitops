@@ -37,15 +37,15 @@ spec:
               containerPort: 8081
               protocol: TCP
           
-          # Resource Limits
+          # Resource Limits (Java 애플리케이션 최적화)
           resources:
             requests:
               cpu: 200m
-              memory: 256Mi
-            limits:
-              cpu: 500m
               memory: 512Mi
-          
+            limits:
+              cpu: 1000m
+              memory: 768Mi
+
           # Health Checks
           livenessProbe:
             httpGet:
@@ -67,6 +67,10 @@ spec:
           
           # Environment Variables
           env:
+            # JVM 메모리 설정 (컨테이너 limit의 70%)
+            - name: JAVA_OPTS
+              value: "-Xmx512m -Xms256m"
+
             # Spring Profile
             - name: SPRING_PROFILES_ACTIVE
               value: "kubernetes,mysql"
