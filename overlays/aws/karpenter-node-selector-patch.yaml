@@ -93,7 +93,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: prometheus
+  name: prometheus-server
   namespace: petclinic
 spec:
   template:
@@ -105,7 +105,7 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: grafana
+  name: grafana-server
   namespace: petclinic
 spec:
   template:
