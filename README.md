@@ -336,7 +336,7 @@ Karpenter: "Pending Pod 감지! 새 노드 프로비저닝"
 - 최대 100% 증가 또는 2개 Pod 추가 (15초마다)
 
 **Scale Down (축소)**
-- 안정화 대기 시간: 300초 (5분 대기)
+- 안정화 대기 시간: 600초 (10분 대기)
 - 최대 50% 감소 (60초마다)
 
 > **참고**: scaleUp stabilizationWindowSeconds를 120초로 설정하여 새 Pod가 Ready 되기 전에 플래핑(반복 생성/삭제)이 발생하지 않도록 함
