@@ -40,10 +40,10 @@ spec:
           # Resource Limits (Java 애플리케이션 최적화)
           resources:
             requests:
-              cpu: 200m
+              cpu: 100m
               memory: 512Mi
             limits:
-              cpu: 1000m
+              cpu: 500m
               memory: 768Mi
 
           # Health Checks (부하 시 타임아웃 방지를 위해 여유있게 설정)
