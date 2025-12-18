@@ -352,6 +352,28 @@ kubectl top pods -n petclinic
 
 ## 🔧 트러블슈팅
 
+### HPA에서 메트릭이 `<unknown>`으로 표시됨
+
+**원인**: Metrics Server가 설치되지 않음 (EKS는 기본 미설치)
+
+**확인**:
+```bash
+# Metrics Server Pod 확인
+kubectl get pods -n kube-system | grep metrics
+
+# metrics API 동작 확인
+kubectl top nodes
+```
+
+**해결**: Metrics Server는 `platform-gitops-last`에서 ArgoCD로 관리됨
+```bash
+# metrics-server Application 확인
+kubectl get application -n argocd | grep metrics
+
+# 설치 후 HPA 메트릭 확인 (1-2분 대기)
+kubectl get hpa -n petclinic
+```
+
 ### GKE에서 ImagePullBackOff
 
 **원인**: GKE 서비스 계정에 Artifact Registry 읽기 권한 없음
