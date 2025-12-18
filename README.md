@@ -63,8 +63,7 @@ petclinic-gitops/
 ├── overlays/
 │   ├── aws/                        # AWS 환경
 │   │   ├── kustomization.yaml      # ECR 이미지 + AWS 태그
-│   │   ├── cluster-secret-store.yaml # AWS Secrets Manager
-│   │   ├── external-secret.yaml    # petclinic-kr/db
+│   │   ├── external-secret.yaml    # petclinic-kr/db (ClusterSecretStore는 platform-gitops에서 관리)
 │   │   └── karpenter-node-selector-patch.yaml # Karpenter 노드 스케줄링
 │   │
 │   └── gcp/                        # GCP 환경

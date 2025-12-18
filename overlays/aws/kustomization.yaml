@@ -3,7 +3,7 @@ kind: Kustomization
 namespace: petclinic
 resources:
   - ../../base
-  - cluster-secret-store.yaml
+  # ClusterSecretStore는 platform-gitops/external-secrets에서 관리
   - external-secret.yaml
 
 # Karpenter 노드 스케줄링을 위한 patch
