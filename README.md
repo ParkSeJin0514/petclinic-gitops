@@ -64,7 +64,8 @@ petclinic-gitops/
 │   ├── aws/                        # AWS 환경
 │   │   ├── kustomization.yaml      # ECR 이미지 + AWS 태그
 │   │   ├── cluster-secret-store.yaml # AWS Secrets Manager
-│   │   └── external-secret.yaml    # petclinic-kr/db
+│   │   ├── external-secret.yaml    # petclinic-kr/db
+│   │   └── karpenter-node-selector-patch.yaml # Karpenter 노드 스케줄링
 │   │
 │   └── gcp/                        # GCP 환경
 │       ├── kustomization.yaml      # Artifact Registry 이미지
@@ -219,6 +220,74 @@ kubectl get svc grafana-server -n petclinic -o jsonpath='{.metadata.annotations}
 
 # Ingress Backend 상태 확인
 kubectl describe ingress grafana-ingress -n petclinic | grep -i backend
+```
+
+## 🚀 Karpenter 노드 스케줄링 (AWS)
+
+AWS EKS 환경에서 PetClinic 워크로드가 Karpenter가 프로비저닝한 노드에만 스케줄링되도록 설정되어 있습니다.
+
+### 동작 방식
+
+```
+Karpenter NodePool (general)
+├── 노드 라벨: managed-by: karpenter
+└── 노드 라벨: node-role: workload
+                    ↓
+PetClinic Deployments (patch 적용)
+└── nodeSelector: managed-by: karpenter
+                    ↓
+Pod들이 Karpenter 노드에만 스케줄링됨
+(Managed Node Group 제외)
+```
+
+### 적용 대상 (overlays/aws/karpenter-node-selector-patch.yaml)
+
+| Deployment | 설명 |
+|------------|------|
+| config-server | Spring Cloud Config Server |
+| discovery-server | Eureka Discovery Server |
+| customers-service | 고객 정보 서비스 |
+| visits-service | 방문 기록 서비스 |
+| vets-service | 수의사 정보 서비스 |
+| api-gateway | API Gateway |
+| admin-server | Spring Boot Admin |
+| prometheus | 메트릭 수집 |
+| grafana | 대시보드 |
+
+### Karpenter NodePool 설정 (platform-gitops)
+
+```yaml
+# NodePool에서 정의된 노드 라벨
+template:
+  metadata:
+    labels:
+      node-role: workload
+      managed-by: karpenter
+```
+
+### 확인 방법
+
+```bash
+# Karpenter 노드 확인
+kubectl get nodes -l managed-by=karpenter
+
+# Pod가 Karpenter 노드에서 실행 중인지 확인
+kubectl get pods -n petclinic -o wide
+
+# 특정 Pod의 노드 정보 확인
+kubectl get pod <pod-name> -n petclinic -o jsonpath='{.spec.nodeName}'
+```
+
+### 기존 Pod 마이그레이션
+
+patch 적용 후 기존 Managed Node Group에서 실행 중인 Pod들을 Karpenter 노드로 이동시키려면:
+
+```bash
+# 모든 Deployment 재시작
+kubectl rollout restart deployment -n petclinic --all
+
+# 또는 개별 Deployment 재시작
+kubectl rollout restart deployment/<deployment-name> -n petclinic
 ```
 
 ## 🔧 트러블슈팅

@@ -1,0 +1,114 @@
+# ============================================================================
+# Karpenter Node Selector Patch
+# ============================================================================
+# 모든 petclinic Deployment가 Karpenter 노드에 스케줄링되도록 설정
+# NodePool에서 정의된 라벨: managed-by: karpenter
+# ============================================================================
+
+# Config Server
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: config-server
+  namespace: petclinic
+spec:
+  template:
+    spec:
+      nodeSelector:
+        managed-by: karpenter
+---
+# Discovery Server
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: discovery-server
+  namespace: petclinic
+spec:
+  template:
+    spec:
+      nodeSelector:
+        managed-by: karpenter
+---
+# Customers Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: customers-service
+  namespace: petclinic
+spec:
+  template:
+    spec:
+      nodeSelector:
+        managed-by: karpenter
+---
+# Visits Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: visits-service
+  namespace: petclinic
+spec:
+  template:
+    spec:
+      nodeSelector:
+        managed-by: karpenter
+---
+# Vets Service
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vets-service
+  namespace: petclinic
+spec:
+  template:
+    spec:
+      nodeSelector:
+        managed-by: karpenter
+---
+# API Gateway
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+  namespace: petclinic
+spec:
+  template:
+    spec:
+      nodeSelector:
+        managed-by: karpenter
+---
+# Admin Server
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: admin-server
+  namespace: petclinic
+spec:
+  template:
+    spec:
+      nodeSelector:
+        managed-by: karpenter
+---
+# Prometheus
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  namespace: petclinic
+spec:
+  template:
+    spec:
+      nodeSelector:
+        managed-by: karpenter
+---
+# Grafana
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana
+  namespace: petclinic
+spec:
+  template:
+    spec:
+      nodeSelector:
+        managed-by: karpenter

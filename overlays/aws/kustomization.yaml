@@ -5,6 +5,11 @@ resources:
   - ../../base
   - cluster-secret-store.yaml
   - external-secret.yaml
+
+# Karpenter 노드 스케줄링을 위한 patch
+patches:
+  - path: karpenter-node-selector-patch.yaml
+
 images:
   - name: springcommunity/spring-petclinic-config-server
     newName: 946775837287.dkr.ecr.ap-northeast-2.amazonaws.com/petclinic-msa/petclinic-config-server
