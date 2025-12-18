@@ -377,5 +377,5 @@ kubectl describe externalsecret petclinic-db-secret -n petclinic
 | 저장소 | 설명 |
 |--------|------|
 | **petclinic-dev** | 소스 코드 + CI/CD (GitHub Actions) |
-| **platform-gitops-test** | 플랫폼 컴포넌트 (ArgoCD, External Secrets 등) |
-| **platform-dev-test** | Terraform 인프라 (EKS, GKE, VPC 등) |
+| **platform-gitops-last** | 플랫폼 컴포넌트 (ArgoCD, External Secrets 등) |
+| **platform-dev-last** | Terraform 인프라 (EKS, GKE, VPC 등) |
