@@ -332,14 +332,41 @@ Karpenter: "Pending Pod 감지! 새 노드 프로비저닝"
 ### 스케일링 정책
 
 **Scale Up (확장)**
-- 안정화 대기 시간: 120초 (Pod Ready 시간과 일치)
+- 안정화 대기 시간: 60초
 - 최대 100% 증가 또는 2개 Pod 추가 (15초마다)
 
 **Scale Down (축소)**
-- 안정화 대기 시간: 600초 (10분 대기)
+- 안정화 대기 시간: 300초 (5분 대기)
 - 최대 50% 감소 (60초마다)
 
-> **참고**: scaleUp stabilizationWindowSeconds를 120초로 설정하여 새 Pod가 Ready 되기 전에 플래핑(반복 생성/삭제)이 발생하지 않도록 함
+### ArgoCD ignoreDifferences 설정 (필수!)
+
+HPA와 ArgoCD를 함께 사용할 때, ArgoCD의 `selfHeal: true` 설정이 HPA가 변경한 replicas를 Git 상태로 되돌려버리는 문제가 발생합니다.
+
+**문제 증상:**
+```
+Pod 생성 → 몇 초 후 Terminating → 다시 생성 → 반복 (플래핑)
+```
+
+**원인:**
+1. HPA가 CPU 초과 감지 → replicas 4로 스케일업
+2. ArgoCD가 Git과 비교 → "Git에는 replicas가 없는데?"
+3. ArgoCD selfHeal이 Git 상태로 복원 → Pod 삭제
+4. HPA가 다시 스케일업 시도 → 무한 반복
+
+**해결책:** ArgoCD Application에 `ignoreDifferences` 추가
+
+```yaml
+# platform-gitops/aws/apps/petclinic-app.yaml
+spec:
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas
+```
+
+이 설정으로 ArgoCD가 Deployment의 replicas 필드를 무시하고, HPA가 자유롭게 스케일링할 수 있습니다.
 
 ### 확인 방법
 
