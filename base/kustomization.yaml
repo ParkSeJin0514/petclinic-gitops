@@ -10,5 +10,6 @@ resources:
   - manifests/05-vets-service.yaml
   - manifests/06-api-gateway.yaml
   - manifests/07-admin-server.yaml
+  - manifests/08-hpa.yaml
   - manifests/10-ingress.yaml
   - manifests/11-monitoring.yaml

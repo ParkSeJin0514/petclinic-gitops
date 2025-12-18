@@ -55,6 +55,7 @@ petclinic-gitops/
 │       ├── 05-vets-service.yaml
 │       ├── 06-api-gateway.yaml     # 외부 트래픽 진입점
 │       ├── 07-admin-server.yaml    # Spring Boot Admin
+│       ├── 08-hpa.yaml             # HPA (Horizontal Pod Autoscaler)
 │       ├── 10-ingress.yaml         # Ingress (base)
 │       ├── 11-monitoring.yaml      # Prometheus + Grafana
 │       ├── 12-monitoring-cluster-values.yaml
@@ -287,6 +288,66 @@ kubectl rollout restart deployment -n petclinic --all
 
 # 또는 개별 Deployment 재시작
 kubectl rollout restart deployment/<deployment-name> -n petclinic
+```
+
+## 📈 HPA (Horizontal Pod Autoscaler)
+
+트래픽 증가 시 자동으로 Pod 수를 조절합니다. Karpenter와 연동하여 노드도 자동 확장됩니다.
+
+### 동작 흐름
+
+```
+트래픽 증가
+    ↓
+HPA: "CPU 70% 초과! Pod 2개 → 5개로 증가"
+    ↓
+새 Pod 3개 Pending (노드 리소스 부족)
+    ↓
+Karpenter: "Pending Pod 감지! 새 노드 프로비저닝"
+    ↓
+새 노드 Ready → Pod 스케줄링 완료
+```
+
+### HPA 적용 대상 (base/manifests/08-hpa.yaml)
+
+| 서비스 | minReplicas | maxReplicas | CPU 임계값 | Memory 임계값 |
+|--------|-------------|-------------|------------|---------------|
+| api-gateway | 2 | 10 | 70% | 80% |
+| customers-service | 2 | 8 | 70% | 80% |
+| visits-service | 2 | 8 | 70% | 80% |
+| vets-service | 2 | 8 | 70% | 80% |
+
+### HPA 미적용 서비스
+
+| 서비스 | 이유 |
+|--------|------|
+| config-server | 시작 시에만 사용 (트래픽 적음) |
+| discovery-server | 내부 서비스 등록용 |
+| admin-server | 관리 도구 |
+| prometheus-server | 모니터링 |
+| grafana-server | 대시보드 |
+
+### 스케일링 정책
+
+**Scale Up (확장)**
+- 안정화 대기 시간: 0초 (즉시 확장)
+- 최대 100% 증가 또는 4개 Pod 추가 (15초마다)
+
+**Scale Down (축소)**
+- 안정화 대기 시간: 300초 (5분 대기)
+- 최대 50% 감소 (60초마다)
+
+### 확인 방법
+
+```bash
+# HPA 상태 확인
+kubectl get hpa -n petclinic
+
+# HPA 상세 정보
+kubectl describe hpa api-gateway-hpa -n petclinic
+
+# 현재 Pod 수와 메트릭 확인
+kubectl top pods -n petclinic
 ```
 
 ## 🔧 트러블슈팅
