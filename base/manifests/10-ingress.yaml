@@ -33,7 +33,9 @@ metadata:
 spec:
   ingressClassName: alb
   rules:
-    - http:
+    # External DNS가 이 host를 보고 Route53에 A 레코드 자동 생성
+    - host: psj0514.site
+      http:
         paths:
           # API Gateway - 메인 애플리케이션
           - path: /
@@ -43,7 +45,7 @@ spec:
                 name: api-gateway
                 port:
                   number: 8080
-          
+
           # Admin Server (Spring Boot Admin)
           - path: /admin
             pathType: Prefix

@@ -56,7 +56,7 @@ petclinic-gitops/
 │       ├── 06-api-gateway.yaml     # 외부 트래픽 진입점
 │       ├── 07-admin-server.yaml    # Spring Boot Admin
 │       ├── 08-hpa.yaml             # HPA (Horizontal Pod Autoscaler)
-│       ├── 10-ingress.yaml         # Ingress (base)
+│       ├── 10-ingress.yaml         # Ingress (host: psj0514.site)
 │       ├── 11-monitoring.yaml      # Prometheus + Grafana
 │       ├── 12-monitoring-cluster-values.yaml
 │       └── 13-monitoring-cluster.yaml
@@ -84,7 +84,10 @@ petclinic-gitops/
 | **Secrets** | AWS Secrets Manager | GCP Secret Manager |
 | **Ingress** | ALB Controller | GKE Ingress (GCE) |
 | **인증** | IRSA | Workload Identity |
+| **도메인** | psj0514.site | psj0514.site |
 | **ArgoCD Path** | `overlays/aws` | `overlays/gcp` |
+
+> **Note**: 듀얼 DNS 구성으로 Route53과 Cloud DNS 양쪽에서 `psj0514.site` 도메인을 관리합니다.
 
 ## 🐳 이미지 레지스트리
 
