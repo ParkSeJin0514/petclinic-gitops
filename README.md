@@ -417,14 +417,15 @@ K8s 클러스터 ──▶ kube-prometheus-stack (monitoring) ──▶ Grafana/
 
 **Ingress:** `cluster-grafana-ingress`, `cluster-prometheus-ingress`, `cluster-alertmanager-ingress`
 
-**설치 방법:**
-```bash
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm repo update
-helm install kube-prometheus prometheus-community/kube-prometheus-stack \
-  --namespace monitoring --create-namespace \
-  -f <(kubectl get cm cluster-monitoring-helm-values -n monitoring -o jsonpath='{.data.values\.yaml}')
-```
+**배포 방식:**
+
+| 환경 | 방식 | 위치 |
+|------|------|------|
+| AWS | ArgoCD Application (Helm) | `platform-gitops-last/aws/platform/kube-prometheus-stack/` |
+| GCP | ArgoCD Application (Helm) | `platform-gitops-last/gcp/platform/kube-prometheus-stack/` |
+
+> **Note**: 클러스터 모니터링은 `platform-gitops-last` 저장소에서 ArgoCD로 관리됩니다.
+> `petclinic-gitops/base/manifests/12-cluster-monitoring.yaml`은 참조용 Ingress 설정만 포함합니다.
 
 ---
 
