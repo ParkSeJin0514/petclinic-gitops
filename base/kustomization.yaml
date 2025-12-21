@@ -12,4 +12,5 @@ resources:
   - manifests/07-admin-server.yaml
   - manifests/08-hpa.yaml
   - manifests/10-ingress.yaml
-  - manifests/11-monitoring.yaml
+  - manifests/11-app-monitoring.yaml
+  - manifests/12-cluster-monitoring.yaml

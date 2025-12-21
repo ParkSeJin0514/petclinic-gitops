@@ -1,0 +1,256 @@
+# ============================================================================
+# Cluster-wide Monitoring with kube-prometheus-stack
+# ============================================================================
+# 이 파일은 Helm으로 설치한 kube-prometheus-stack에 대한 설정과 Ingress를 제공합니다.
+# 11-app-monitoring.yaml (petclinic namespace)과 독립적으로 동작합니다.
+#
+# 사전 설치:
+#   helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+#   helm repo update
+#   helm install kube-prometheus prometheus-community/kube-prometheus-stack \
+#     --namespace monitoring --create-namespace \
+#     -f 12-cluster-monitoring-values.yaml
+# ============================================================================
+
+---
+# ============================================================================
+# Helm Values (별도 파일로 저장하여 사용)
+# ============================================================================
+# 아래 ConfigMap은 참조용입니다. 실제 Helm 설치 시 values.yaml로 사용하세요.
+# kubectl create configmap cluster-monitoring-values --from-file=values.yaml=- <<EOF
+# ... (아래 내용)
+# EOF
+# ============================================================================
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-monitoring-helm-values
+  namespace: monitoring
+  labels:
+    app: kube-prometheus-stack
+    purpose: helm-values-reference
+data:
+  values.yaml: |
+    # ============================================================================
+    # kube-prometheus-stack Helm Values
+    # ============================================================================
+
+    # Prometheus 설정
+    prometheus:
+      prometheusSpec:
+        # 서브패스에서 동작하도록 설정
+        externalUrl: "/prometheus"
+        routePrefix: "/prometheus"
+        # 리소스 제한
+        resources:
+          requests:
+            cpu: 200m
+            memory: 512Mi
+          limits:
+            cpu: 1000m
+            memory: 2Gi
+        # 데이터 보존 기간
+        retention: 7d
+        # PetClinic 서비스 추가 스크래핑
+        additionalScrapeConfigs:
+          - job_name: 'petclinic-config-server'
+            metrics_path: '/actuator/prometheus'
+            static_configs:
+              - targets: ['config-server.petclinic.svc.cluster.local:8888']
+          - job_name: 'petclinic-discovery-server'
+            metrics_path: '/actuator/prometheus'
+            static_configs:
+              - targets: ['discovery-server.petclinic.svc.cluster.local:8761']
+          - job_name: 'petclinic-customers-service'
+            metrics_path: '/actuator/prometheus'
+            static_configs:
+              - targets: ['customers-service.petclinic.svc.cluster.local:8081']
+          - job_name: 'petclinic-visits-service'
+            metrics_path: '/actuator/prometheus'
+            static_configs:
+              - targets: ['visits-service.petclinic.svc.cluster.local:8082']
+          - job_name: 'petclinic-vets-service'
+            metrics_path: '/actuator/prometheus'
+            static_configs:
+              - targets: ['vets-service.petclinic.svc.cluster.local:8083']
+          - job_name: 'petclinic-api-gateway'
+            metrics_path: '/actuator/prometheus'
+            static_configs:
+              - targets: ['api-gateway.petclinic.svc.cluster.local:8080']
+
+    # Grafana 설정
+    grafana:
+      adminPassword: admin
+      # 리소스 제한
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 500m
+          memory: 512Mi
+      # 기본 대시보드 프로비저닝
+      defaultDashboardsEnabled: true
+      # 사이드카 설정 (대시보드 자동 로드)
+      sidecar:
+        dashboards:
+          enabled: true
+
+    # AlertManager 설정
+    alertmanager:
+      alertmanagerSpec:
+        externalUrl: "/alertmanager"
+        routePrefix: "/alertmanager"
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+
+    # Node Exporter (노드 메트릭)
+    nodeExporter:
+      enabled: true
+
+    # Kube State Metrics (K8s 리소스 메트릭)
+    kubeStateMetrics:
+      enabled: true
+
+    # 기본 규칙 활성화
+    defaultRules:
+      create: true
+      rules:
+        alertmanager: true
+        etcd: false  # EKS에서는 etcd 접근 불가
+        general: true
+        k8s: true
+        kubeApiserver: true
+        kubeApiserverAvailability: true
+        kubeApiserverSlos: true
+        kubelet: true
+        kubeProxy: false  # EKS managed
+        kubePrometheusGeneral: true
+        kubePrometheusNodeRecording: true
+        kubernetesApps: true
+        kubernetesResources: true
+        kubernetesStorage: true
+        kubernetesSystem: true
+        kubeScheduler: false  # EKS managed
+        kubeStateMetrics: true
+        network: true
+        node: true
+        nodeExporterAlerting: true
+        nodeExporterRecording: true
+        prometheus: true
+        prometheusOperator: true
+
+---
+# ============================================================================
+# Ingress Resources for kube-prometheus-stack
+# ============================================================================
+
+# Grafana Ingress (kube-prometheus-stack)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cluster-grafana-ingress
+  namespace: monitoring
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/load-balancer-name: cluster-monitoring-alb
+    alb.ingress.kubernetes.io/group.name: cluster-monitoring
+    alb.ingress.kubernetes.io/group.order: '2'
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+    alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+    alb.ingress.kubernetes.io/healthcheck-path: /api/health
+    alb.ingress.kubernetes.io/healthcheck-interval-seconds: '15'
+    alb.ingress.kubernetes.io/healthcheck-timeout-seconds: '5'
+    alb.ingress.kubernetes.io/success-codes: '200'
+    alb.ingress.kubernetes.io/healthy-threshold-count: '2'
+    alb.ingress.kubernetes.io/unhealthy-threshold-count: '2'
+    alb.ingress.kubernetes.io/tags: Environment=production,Project=cluster-monitoring
+spec:
+  ingressClassName: alb
+  rules:
+    - http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: kube-prometheus-grafana
+                port:
+                  number: 80
+---
+# Prometheus Ingress (kube-prometheus-stack)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cluster-prometheus-ingress
+  namespace: monitoring
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/load-balancer-name: cluster-monitoring-alb
+    alb.ingress.kubernetes.io/group.name: cluster-monitoring
+    alb.ingress.kubernetes.io/group.order: '1'
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+    alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+    alb.ingress.kubernetes.io/healthcheck-path: /prometheus/-/healthy
+    alb.ingress.kubernetes.io/healthcheck-interval-seconds: '15'
+    alb.ingress.kubernetes.io/healthcheck-timeout-seconds: '5'
+    alb.ingress.kubernetes.io/success-codes: '200'
+    alb.ingress.kubernetes.io/healthy-threshold-count: '2'
+    alb.ingress.kubernetes.io/unhealthy-threshold-count: '2'
+    alb.ingress.kubernetes.io/tags: Environment=production,Project=cluster-monitoring
+spec:
+  ingressClassName: alb
+  rules:
+    - http:
+        paths:
+          - path: /prometheus
+            pathType: Prefix
+            backend:
+              service:
+                name: kube-prometheus-kube-prome-prometheus
+                port:
+                  number: 9090
+---
+# AlertManager Ingress (kube-prometheus-stack)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cluster-alertmanager-ingress
+  namespace: monitoring
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/load-balancer-name: cluster-monitoring-alb
+    alb.ingress.kubernetes.io/group.name: cluster-monitoring
+    alb.ingress.kubernetes.io/group.order: '3'
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+    alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+    alb.ingress.kubernetes.io/healthcheck-path: /alertmanager/-/healthy
+    alb.ingress.kubernetes.io/healthcheck-interval-seconds: '15'
+    alb.ingress.kubernetes.io/healthcheck-timeout-seconds: '5'
+    alb.ingress.kubernetes.io/success-codes: '200'
+    alb.ingress.kubernetes.io/healthy-threshold-count: '2'
+    alb.ingress.kubernetes.io/unhealthy-threshold-count: '2'
+    alb.ingress.kubernetes.io/tags: Environment=production,Project=cluster-monitoring
+spec:
+  ingressClassName: alb
+  rules:
+    - http:
+        paths:
+          - path: /alertmanager
+            pathType: Prefix
+            backend:
+              service:
+                name: kube-prometheus-kube-prome-alertmanager
+                port:
+                  number: 9093
