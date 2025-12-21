@@ -36,19 +36,3 @@ spec:
     type: HTTP
     requestPath: /prometheus/-/healthy
     port: 9090
----
-# BackendConfig for AlertManager Health Check
-apiVersion: cloud.google.com/v1
-kind: BackendConfig
-metadata:
-  name: alertmanager-cluster-backend-config
-  namespace: monitoring
-spec:
-  healthCheck:
-    checkIntervalSec: 15
-    timeoutSec: 5
-    healthyThreshold: 2
-    unhealthyThreshold: 2
-    type: HTTP
-    requestPath: /alertmanager/-/healthy
-    port: 9093
