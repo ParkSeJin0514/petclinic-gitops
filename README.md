@@ -424,12 +424,12 @@ K8s 클러스터 ──▶ kube-prometheus-stack (monitoring) ──▶ Grafana/
 
 | 환경 | 방식 | 위치 |
 |------|------|------|
-| AWS (Primary) | ArgoCD + Helm | `platform-gitops-last/aws/platform/kube-prometheus-stack/` |
-| GCP (DR) | ArgoCD + Helm | `platform-gitops-last/gcp/platform/kube-prometheus-stack/` |
+| AWS (Primary) | ArgoCD + Kustomize | `petclinic-gitops/base/` + `overlays/aws/` |
+| GCP (DR) | ArgoCD + Kustomize | `petclinic-gitops/base/` + `overlays/gcp/` |
 
-> **Note**: 클러스터 모니터링은 `platform-gitops-last` 저장소에서 ArgoCD로 관리됩니다.
-> - AWS: base의 ALB Ingress 사용
-> - GCP: base의 ALB Ingress 삭제 후 GKE Ingress로 대체 (platform-gitops-last에서 배포)
+> **Note**: 클러스터 모니터링(kube-prometheus-stack)은 `petclinic-gitops` 저장소에서 ArgoCD로 관리됩니다.
+> - AWS: base의 ALB Ingress 사용 (cluster-*-ingress)
+> - GCP: Kustomize JSON Patch로 ALB → GKE Ingress 변환 (overlays/gcp/kustomization.yaml)
 
 ---
 
