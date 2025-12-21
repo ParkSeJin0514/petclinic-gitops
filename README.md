@@ -80,14 +80,15 @@ petclinic-gitops/
 
 | 항목 | AWS (Primary) | GCP (DR) |
 |------|---------------|----------|
+| **역할** | 주 운영 환경 | 재해복구 (DR) 환경 |
 | **Container Registry** | ECR | Artifact Registry |
 | **Secrets** | AWS Secrets Manager | GCP Secret Manager |
 | **Ingress** | ALB Controller | GKE Ingress (GCE) |
 | **인증** | IRSA | Workload Identity |
-| **도메인** | psj0514.site | psj0514.site |
+| **클러스터 모니터링** | kube-prometheus-stack | kube-prometheus-stack |
 | **ArgoCD Path** | `overlays/aws` | `overlays/gcp` |
 
-> **Note**: 듀얼 DNS 구성으로 Route53과 Cloud DNS 양쪽에서 `psj0514.site` 도메인을 관리합니다.
+> **Note**: AWS가 Primary CSP이고, GCP는 DR(Disaster Recovery) 보조 환경입니다.
 
 ## 🐳 이미지 레지스트리
 
@@ -400,7 +401,9 @@ PetClinic 서비스들 ──(/actuator/prometheus)──▶ Prometheus (petclin
 - customers-service, visits-service, vets-service
 - api-gateway, admin-server
 
-**Ingress:** `grafana-ingress`, `prometheus-ingress` (AWS ALB)
+**Ingress:**
+- AWS: `grafana-ingress`, `prometheus-ingress` (ALB)
+- GCP: `monitoring-ingress` (GKE Ingress)
 
 ### 12-cluster-monitoring.yaml (클러스터 레벨)
 
@@ -421,11 +424,12 @@ K8s 클러스터 ──▶ kube-prometheus-stack (monitoring) ──▶ Grafana/
 
 | 환경 | 방식 | 위치 |
 |------|------|------|
-| AWS | ArgoCD Application (Helm) | `platform-gitops-last/aws/platform/kube-prometheus-stack/` |
-| GCP | ArgoCD Application (Helm) | `platform-gitops-last/gcp/platform/kube-prometheus-stack/` |
+| AWS (Primary) | ArgoCD + Helm | `platform-gitops-last/aws/platform/kube-prometheus-stack/` |
+| GCP (DR) | ArgoCD + Helm | `platform-gitops-last/gcp/platform/kube-prometheus-stack/` |
 
 > **Note**: 클러스터 모니터링은 `platform-gitops-last` 저장소에서 ArgoCD로 관리됩니다.
-> `petclinic-gitops/base/manifests/12-cluster-monitoring.yaml`은 참조용 Ingress 설정만 포함합니다.
+> - AWS: base의 ALB Ingress 사용
+> - GCP: base의 ALB Ingress 삭제 후 GKE Ingress로 대체 (platform-gitops-last에서 배포)
 
 ---
 
