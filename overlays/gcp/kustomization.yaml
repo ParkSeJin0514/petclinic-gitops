@@ -10,7 +10,25 @@ resources:
 patches:
   - path: petclinic-ingress-patch.yaml
   - path: service-patch.yaml
-  - path: delete-separate-ingress.yaml
+  # grafana-ingress, prometheus-ingress 삭제 (JSON Patch 사용)
+  - target:
+      kind: Ingress
+      name: grafana-ingress
+    patch: |
+      $patch: delete
+      apiVersion: networking.k8s.io/v1
+      kind: Ingress
+      metadata:
+        name: grafana-ingress
+  - target:
+      kind: Ingress
+      name: prometheus-ingress
+    patch: |
+      $patch: delete
+      apiVersion: networking.k8s.io/v1
+      kind: Ingress
+      metadata:
+        name: prometheus-ingress
 images:
   - name: springcommunity/spring-petclinic-config-server
     newName: asia-northeast3-docker.pkg.dev/kdt2-final-project-t1/petclinic-msa/petclinic-config-server
