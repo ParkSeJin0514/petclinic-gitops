@@ -69,11 +69,13 @@ petclinic-gitops/
 │   │
 │   └── gcp/                        # GCP 환경
 │       ├── kustomization.yaml      # Artifact Registry 이미지
-│       ├── cluster-secret-store.yaml # GCP Secret Manager
+│       ├── cluster-secret-store.yaml # GCP Secret Manager (Workload Identity)
 │       ├── external-secret.yaml    # petclinic-dr-db-credentials
-│       ├── ingress-patch.yaml      # GKE Ingress 패치
+│       ├── monitoring-ingress.yaml # Grafana + Prometheus Ingress (새 리소스)
+│       ├── petclinic-ingress-patch.yaml # base ingress → GKE Ingress 패치
 │       ├── backend-config.yaml     # GCP Health Check 설정
-│       └── service-patch.yaml      # Service에 BackendConfig 연결
+│       ├── service-patch.yaml      # Service에 BackendConfig 연결
+│       └── delete-separate-ingress.yaml # 불필요한 개별 Ingress 삭제
 ```
 
 ## ☁️ Multi-Cloud 지원
@@ -222,7 +224,90 @@ kubectl get backendconfig -n petclinic
 kubectl get svc grafana-server -n petclinic -o jsonpath='{.metadata.annotations}'
 
 # Ingress Backend 상태 확인
-kubectl describe ingress grafana-ingress -n petclinic | grep -i backend
+kubectl describe ingress monitoring-ingress -n petclinic | grep -i backend
+```
+
+## 🌐 GKE Ingress 구성 (GCP)
+
+GCP 환경에서는 GKE Ingress (GCE Load Balancer)를 사용합니다.
+
+### Ingress 구성 파일
+
+| 파일 | 유형 | 설명 |
+|------|------|------|
+| `petclinic-ingress-patch.yaml` | Patch | base의 ALB Ingress를 GKE Ingress로 변환 |
+| `monitoring-ingress.yaml` | Resource | Grafana + Prometheus 전용 Ingress (새 리소스) |
+| `delete-separate-ingress.yaml` | Patch | base의 불필요한 개별 Ingress 삭제 |
+
+### petclinic-ingress (패치)
+
+```yaml
+# base의 petclinic-ingress를 GKE용으로 패치
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: petclinic-ingress
+  annotations:
+    kubernetes.io/ingress.class: gce
+spec:
+  ingressClassName: gce
+  rules:
+    - http:
+        paths:
+          - path: /
+            backend:
+              service:
+                name: api-gateway
+                port:
+                  number: 8080
+          - path: /admin
+            backend:
+              service:
+                name: admin-server
+                port:
+                  number: 9090
+```
+
+### monitoring-ingress (새 리소스)
+
+```yaml
+# Grafana + Prometheus 통합 Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: monitoring-ingress
+  annotations:
+    kubernetes.io/ingress.class: gce
+spec:
+  ingressClassName: gce
+  rules:
+    - http:
+        paths:
+          - path: /
+            backend:
+              service:
+                name: grafana-server
+                port:
+                  number: 3000
+          - path: /prometheus
+            backend:
+              service:
+                name: prometheus-server
+                port:
+                  number: 9090
+```
+
+### GKE Ingress 확인
+
+```bash
+# Ingress 목록 확인
+kubectl get ingress -n petclinic
+
+# External IP 확인 (프로비저닝에 3-5분 소요)
+kubectl get ingress petclinic-ingress -n petclinic -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+
+# Ingress 상세 정보
+kubectl describe ingress petclinic-ingress -n petclinic
 ```
 
 ## 🚀 Karpenter 노드 스케줄링 (AWS)
