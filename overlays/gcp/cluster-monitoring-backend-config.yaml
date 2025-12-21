@@ -1,0 +1,54 @@
+# ============================================================================
+# BackendConfig for Cluster Monitoring (GKE Health Check)
+# ============================================================================
+# kube-prometheus-stack 서비스들의 GKE Health Check 설정
+# ============================================================================
+
+---
+# BackendConfig for Grafana Health Check
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: grafana-cluster-backend-config
+  namespace: monitoring
+spec:
+  healthCheck:
+    checkIntervalSec: 15
+    timeoutSec: 5
+    healthyThreshold: 2
+    unhealthyThreshold: 2
+    type: HTTP
+    requestPath: /api/health
+    port: 3000
+---
+# BackendConfig for Prometheus Health Check
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: prometheus-cluster-backend-config
+  namespace: monitoring
+spec:
+  healthCheck:
+    checkIntervalSec: 15
+    timeoutSec: 5
+    healthyThreshold: 2
+    unhealthyThreshold: 2
+    type: HTTP
+    requestPath: /prometheus/-/healthy
+    port: 9090
+---
+# BackendConfig for AlertManager Health Check
+apiVersion: cloud.google.com/v1
+kind: BackendConfig
+metadata:
+  name: alertmanager-cluster-backend-config
+  namespace: monitoring
+spec:
+  healthCheck:
+    checkIntervalSec: 15
+    timeoutSec: 5
+    healthyThreshold: 2
+    unhealthyThreshold: 2
+    type: HTTP
+    requestPath: /alertmanager/-/healthy
+    port: 9093

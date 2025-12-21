@@ -7,10 +7,11 @@ resources:
   - external-secret.yaml
   - backend-config.yaml
   - monitoring-ingress.yaml
+  - cluster-monitoring-backend-config.yaml
 patches:
   - path: petclinic-ingress-patch.yaml
   - path: service-patch.yaml
-  # grafana-ingress, prometheus-ingress 삭제 (JSON Patch 사용)
+  # grafana-ingress, prometheus-ingress 삭제 (앱 모니터링은 monitoring-ingress.yaml로 대체)
   - target:
       kind: Ingress
       name: grafana-ingress
@@ -29,34 +30,43 @@ patches:
       kind: Ingress
       metadata:
         name: prometheus-ingress
-  # cluster-*-ingress 삭제 (platform-gitops-last에서 GKE용으로 별도 배포)
+  # cluster-*-ingress: ALB → GKE Ingress로 패치 (JSON Patch로 annotations 완전 대체)
   - target:
       kind: Ingress
       name: cluster-grafana-ingress
-    patch: |
-      $patch: delete
-      apiVersion: networking.k8s.io/v1
-      kind: Ingress
-      metadata:
-        name: cluster-grafana-ingress
+    patch: |-
+      - op: replace
+        path: /metadata/annotations
+        value:
+          kubernetes.io/ingress.class: gce
+          cloud.google.com/backend-config: '{"default": "grafana-cluster-backend-config"}'
+      - op: replace
+        path: /spec/ingressClassName
+        value: gce
   - target:
       kind: Ingress
       name: cluster-prometheus-ingress
-    patch: |
-      $patch: delete
-      apiVersion: networking.k8s.io/v1
-      kind: Ingress
-      metadata:
-        name: cluster-prometheus-ingress
+    patch: |-
+      - op: replace
+        path: /metadata/annotations
+        value:
+          kubernetes.io/ingress.class: gce
+          cloud.google.com/backend-config: '{"default": "prometheus-cluster-backend-config"}'
+      - op: replace
+        path: /spec/ingressClassName
+        value: gce
   - target:
       kind: Ingress
       name: cluster-alertmanager-ingress
-    patch: |
-      $patch: delete
-      apiVersion: networking.k8s.io/v1
-      kind: Ingress
-      metadata:
-        name: cluster-alertmanager-ingress
+    patch: |-
+      - op: replace
+        path: /metadata/annotations
+        value:
+          kubernetes.io/ingress.class: gce
+          cloud.google.com/backend-config: '{"default": "alertmanager-cluster-backend-config"}'
+      - op: replace
+        path: /spec/ingressClassName
+        value: gce
 images:
   - name: springcommunity/spring-petclinic-config-server
     newName: asia-northeast3-docker.pkg.dev/kdt2-final-project-t1/petclinic-msa/petclinic-config-server
