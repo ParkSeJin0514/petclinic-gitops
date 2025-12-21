@@ -6,8 +6,9 @@ resources:
   - cluster-secret-store.yaml
   - external-secret.yaml
   - backend-config.yaml
+  - monitoring-ingress.yaml
 patches:
-  - path: ingress-patch.yaml
+  - path: petclinic-ingress-patch.yaml
   - path: service-patch.yaml
   - path: delete-separate-ingress.yaml
 images:
