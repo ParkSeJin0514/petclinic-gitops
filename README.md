@@ -57,9 +57,8 @@ petclinic-gitops/
 │       ├── 07-admin-server.yaml    # Spring Boot Admin
 │       ├── 08-hpa.yaml             # HPA (Horizontal Pod Autoscaler)
 │       ├── 10-ingress.yaml         # Ingress (host: psj0514.site)
-│       ├── 11-monitoring.yaml      # Prometheus + Grafana
-│       ├── 12-monitoring-cluster-values.yaml
-│       └── 13-monitoring-cluster.yaml
+│       ├── 11-app-monitoring.yaml  # PetClinic 앱 모니터링 (Prometheus + Grafana)
+│       └── 12-cluster-monitoring.yaml # 클러스터 모니터링 (kube-prometheus-stack)
 │
 ├── overlays/
 │   ├── aws/                        # AWS 환경
@@ -74,8 +73,7 @@ petclinic-gitops/
 │       ├── monitoring-ingress.yaml # Grafana + Prometheus Ingress (새 리소스)
 │       ├── petclinic-ingress-patch.yaml # base ingress → GKE Ingress 패치
 │       ├── backend-config.yaml     # GCP Health Check 설정
-│       ├── service-patch.yaml      # Service에 BackendConfig 연결
-│       └── delete-separate-ingress.yaml # 불필요한 개별 Ingress 삭제
+│       └── service-patch.yaml      # Service에 BackendConfig 연결
 ```
 
 ## ☁️ Multi-Cloud 지원
@@ -377,6 +375,58 @@ kubectl rollout restart deployment -n petclinic --all
 # 또는 개별 Deployment 재시작
 kubectl rollout restart deployment/<deployment-name> -n petclinic
 ```
+
+## 📊 모니터링 구성
+
+두 가지 레벨의 모니터링 시스템이 있습니다.
+
+### 모니터링 파일 구조
+
+| 파일 | Namespace | 목적 | 구성요소 |
+|------|-----------|------|----------|
+| `11-app-monitoring.yaml` | petclinic | PetClinic 앱 모니터링 | Prometheus + Grafana (직접 배포) |
+| `12-cluster-monitoring.yaml` | monitoring | K8s 클러스터 모니터링 | kube-prometheus-stack (Helm) |
+
+### 11-app-monitoring.yaml (애플리케이션 레벨)
+
+PetClinic MSA 서비스들의 메트릭을 수집합니다.
+
+```
+PetClinic 서비스들 ──(/actuator/prometheus)──▶ Prometheus (petclinic) ──▶ Grafana
+```
+
+**수집 대상:**
+- config-server, discovery-server
+- customers-service, visits-service, vets-service
+- api-gateway, admin-server
+
+**Ingress:** `grafana-ingress`, `prometheus-ingress` (AWS ALB)
+
+### 12-cluster-monitoring.yaml (클러스터 레벨)
+
+Kubernetes 클러스터 전체의 메트릭을 수집합니다.
+
+```
+K8s 클러스터 ──▶ kube-prometheus-stack (monitoring) ──▶ Grafana/Prometheus/AlertManager
+```
+
+**수집 대상:**
+- 노드 CPU/Memory/Disk
+- Pod 상태, 재시작
+- kube-apiserver, kubelet, CoreDNS 등
+
+**Ingress:** `cluster-grafana-ingress`, `cluster-prometheus-ingress`, `cluster-alertmanager-ingress`
+
+**설치 방법:**
+```bash
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+helm install kube-prometheus prometheus-community/kube-prometheus-stack \
+  --namespace monitoring --create-namespace \
+  -f <(kubectl get cm cluster-monitoring-helm-values -n monitoring -o jsonpath='{.data.values\.yaml}')
+```
+
+---
 
 ## 📈 HPA (Horizontal Pod Autoscaler)
 
