@@ -418,7 +418,15 @@ K8s 클러스터 ──▶ kube-prometheus-stack (monitoring) ──▶ Grafana/
 - Pod 상태, 재시작
 - kube-apiserver, kubelet, CoreDNS 등
 
-**Ingress:** `cluster-grafana-ingress`, `cluster-prometheus-ingress`, `cluster-alertmanager-ingress`
+**Ingress (LB 연결):**
+
+| Ingress | AWS | GCP |
+|---------|-----|-----|
+| `cluster-grafana-ingress` | ALB (group) | GCE LB |
+| `cluster-prometheus-ingress` | ALB (group) | GCE LB |
+| `cluster-alertmanager-ingress` | ❌ 삭제 | ❌ 삭제 |
+
+> **Note**: AlertManager는 외부 LB 연결 불필요하여 Ingress 삭제
 
 **배포 방식:**
 
@@ -428,8 +436,8 @@ K8s 클러스터 ──▶ kube-prometheus-stack (monitoring) ──▶ Grafana/
 | GCP (DR) | ArgoCD + Kustomize | `petclinic-gitops/base/` + `overlays/gcp/` |
 
 > **Note**: 클러스터 모니터링(kube-prometheus-stack)은 `petclinic-gitops` 저장소에서 ArgoCD로 관리됩니다.
-> - AWS: base의 ALB Ingress 사용 (cluster-*-ingress)
-> - GCP: Kustomize JSON Patch로 ALB → GKE Ingress 변환 (overlays/gcp/kustomization.yaml)
+> - AWS: base의 ALB Ingress 사용 (Ingress Group으로 하나의 ALB 공유)
+> - GCP: Kustomize JSON Patch로 ALB → GKE Ingress 변환
 
 ---
 
