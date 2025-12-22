@@ -24,4 +24,3 @@ metadata:
   namespace: petclinic
   annotations:
     cloud.google.com/backend-config: '{"default": "api-gateway-backend-config"}'
-    cloud.google.com/neg: '{"exposed_ports": {"8080":{"name": "petclinic-api-gateway-neg"}}}'
