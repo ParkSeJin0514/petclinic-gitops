@@ -10,7 +10,7 @@ apiVersion: cloud.google.com/v1
 kind: BackendConfig
 metadata:
   name: grafana-cluster-backend-config
-  namespace: monitoring
+  namespace: petclinic
 spec:
   healthCheck:
     checkIntervalSec: 15
@@ -26,7 +26,7 @@ apiVersion: cloud.google.com/v1
 kind: BackendConfig
 metadata:
   name: prometheus-cluster-backend-config
-  namespace: monitoring
+  namespace: petclinic
 spec:
   healthCheck:
     checkIntervalSec: 15

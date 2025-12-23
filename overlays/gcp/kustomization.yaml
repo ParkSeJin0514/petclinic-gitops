@@ -8,6 +8,7 @@ resources:
   - backend-config.yaml
   - monitoring-ingress.yaml
   - cluster-monitoring-backend-config.yaml
+  - cluster-monitoring-ingress.yaml
 patches:
   - path: petclinic-ingress-patch.yaml
   - path: service-patch.yaml
@@ -30,46 +31,26 @@ patches:
       kind: Ingress
       metadata:
         name: prometheus-ingress
-  # cluster-*-ingress: ALB → GKE Ingress로 패치 (JSON Patch로 annotations 완전 대체)
+  # cluster-grafana-ingress 삭제 (cluster-monitoring-ingress.yaml로 통합)
   - target:
       kind: Ingress
       name: cluster-grafana-ingress
-    patch: |-
-      - op: replace
-        path: /metadata/annotations
-        value:
-          kubernetes.io/ingress.class: gce
-          cloud.google.com/backend-config: '{"default": "grafana-cluster-backend-config"}'
-      - op: replace
-        path: /spec/ingressClassName
-        value: gce
-      - op: replace
-        path: /metadata/namespace
-        value: petclinic
-      - op: replace
-        path: /spec/rules/0/http/paths/0/backend/service/name
-        value: grafana-server
-      - op: replace
-        path: /spec/rules/0/http/paths/0/backend/service/port/number
-        value: 3000
+    patch: |
+      $patch: delete
+      apiVersion: networking.k8s.io/v1
+      kind: Ingress
+      metadata:
+        name: cluster-grafana-ingress
+  # cluster-prometheus-ingress 삭제 (cluster-monitoring-ingress.yaml로 통합)
   - target:
       kind: Ingress
       name: cluster-prometheus-ingress
-    patch: |-
-      - op: replace
-        path: /metadata/annotations
-        value:
-          kubernetes.io/ingress.class: gce
-          cloud.google.com/backend-config: '{"default": "prometheus-cluster-backend-config"}'
-      - op: replace
-        path: /spec/ingressClassName
-        value: gce
-      - op: replace
-        path: /metadata/namespace
-        value: petclinic
-      - op: replace
-        path: /spec/rules/0/http/paths/0/backend/service/name
-        value: prometheus-server
+    patch: |
+      $patch: delete
+      apiVersion: networking.k8s.io/v1
+      kind: Ingress
+      metadata:
+        name: cluster-prometheus-ingress
   # cluster-alertmanager-ingress 삭제 (LB 연결 불필요)
   - target:
       kind: Ingress
