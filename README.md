@@ -70,7 +70,9 @@ petclinic-gitops/
 │       ├── kustomization.yaml      # Artifact Registry 이미지
 │       ├── cluster-secret-store.yaml # GCP Secret Manager (Workload Identity)
 │       ├── external-secret.yaml    # petclinic-dr-db-credentials
-│       ├── monitoring-ingress.yaml # Grafana + Prometheus Ingress (새 리소스)
+│       ├── monitoring-ingress.yaml # 앱 모니터링 Ingress (Grafana + Prometheus)
+│       ├── cluster-monitoring-ingress.yaml # 클러스터 모니터링 통합 Ingress
+│       ├── cluster-monitoring-backend-config.yaml # 클러스터 모니터링 Health Check
 │       ├── petclinic-ingress-patch.yaml # base ingress → GKE Ingress 패치
 │       ├── backend-config.yaml     # GCP Health Check 설정
 │       └── service-patch.yaml      # Service에 BackendConfig 연결
@@ -267,10 +269,10 @@ spec:
                   number: 9090
 ```
 
-### monitoring-ingress (새 리소스)
+### monitoring-ingress (앱 모니터링)
 
 ```yaml
-# Grafana + Prometheus 통합 Ingress
+# PetClinic 앱 모니터링 Ingress (11-app-monitoring.yaml용)
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -295,6 +297,41 @@ spec:
                 port:
                   number: 9090
 ```
+
+### cluster-monitoring-ingress (클러스터 모니터링 통합)
+
+```yaml
+# kube-prometheus-stack 통합 Ingress (Grafana + Prometheus)
+# GCP에서는 2개 Ingress를 1개로 통합하여 LB 비용 절감
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cluster-monitoring-ingress
+  annotations:
+    kubernetes.io/ingress.class: gce
+    cloud.google.com/backend-config: '{"ports": {"3000": "grafana-cluster-backend-config", "9090": "prometheus-cluster-backend-config"}}'
+spec:
+  ingressClassName: gce
+  rules:
+    - http:
+        paths:
+          - path: /              # Grafana
+            backend:
+              service:
+                name: grafana-server
+                port:
+                  number: 3000
+          - path: /prometheus    # Prometheus
+            backend:
+              service:
+                name: prometheus-server
+                port:
+                  number: 9090
+```
+
+**접속 URL:**
+- `http://<LB_IP>/` → Grafana 대시보드
+- `http://<LB_IP>/prometheus` → Prometheus UI
 
 ### GKE Ingress 확인
 
@@ -422,11 +459,14 @@ K8s 클러스터 ──▶ kube-prometheus-stack (monitoring) ──▶ Grafana/
 
 | Ingress | AWS | GCP |
 |---------|-----|-----|
-| `cluster-grafana-ingress` | ALB (group) | GCE LB |
-| `cluster-prometheus-ingress` | ALB (group) | GCE LB |
+| `cluster-grafana-ingress` | ALB (group) | ❌ 삭제 (통합) |
+| `cluster-prometheus-ingress` | ALB (group) | ❌ 삭제 (통합) |
+| `cluster-monitoring-ingress` | - | GCE LB (통합) |
 | `cluster-alertmanager-ingress` | ❌ 삭제 | ❌ 삭제 |
 
-> **Note**: AlertManager는 외부 LB 연결 불필요하여 Ingress 삭제
+> **Note**: GCP에서는 Grafana + Prometheus를 하나의 Ingress로 통합
+> - `/` → Grafana
+> - `/prometheus` → Prometheus
 
 **배포 방식:**
 
