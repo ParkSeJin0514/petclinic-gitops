@@ -1,8 +1,7 @@
 # ============================================================================
 # Cluster Monitoring Ingress for kube-prometheus-stack (AWS)
 # ============================================================================
-# monitoring namespace에 배포되어야 함 (Service와 같은 namespace)
-# Kustomize namespace override에서 제외하기 위해 별도 파일로 관리
+# petclinic namespace에 배포 (kube-prometheus-stack과 동일한 namespace)
 # ============================================================================
 
 ---
@@ -11,7 +10,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: cluster-grafana-ingress
-  namespace: monitoring
+  namespace: petclinic
   annotations:
     kubernetes.io/ingress.class: alb
     alb.ingress.kubernetes.io/scheme: internet-facing
@@ -46,7 +45,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: cluster-prometheus-ingress
-  namespace: monitoring
+  namespace: petclinic
   annotations:
     kubernetes.io/ingress.class: alb
     alb.ingress.kubernetes.io/scheme: internet-facing
@@ -81,7 +80,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: cluster-alertmanager-ingress
-  namespace: monitoring
+  namespace: petclinic
   annotations:
     kubernetes.io/ingress.class: alb
     alb.ingress.kubernetes.io/scheme: internet-facing
