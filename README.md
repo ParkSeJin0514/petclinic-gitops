@@ -32,12 +32,14 @@ petclinic-gitops/
 │       ├── 07-admin-server.yaml    # Spring Boot Admin
 │       ├── 08-hpa.yaml             # HPA
 │       ├── 10-ingress.yaml         # Ingress (host: psj0514.site)
-│       ├── 11-app-monitoring.yaml  # PetClinic 앱 모니터링
-│       └── 12-cluster-monitoring.yaml # kube-prometheus-stack
+│       └── 11-app-monitoring.yaml  # PetClinic 앱 모니터링
 │
 ├── overlays/
 │   ├── aws/                        # AWS 환경 (ECR + IRSA)
+│   │   └── cluster-monitoring-ingress.yaml  # kube-prometheus-stack Ingress (monitoring ns)
 │   └── gcp/                        # GCP 환경 (AR + Workload Identity)
+│       ├── cluster-monitoring-ingress.yaml       # kube-prometheus-stack Ingress (monitoring ns)
+│       └── cluster-monitoring-backend-config.yaml # GKE Health Check 설정
 ```
 
 ## Multi-Cloud 지원
@@ -89,8 +91,8 @@ GKE Ingress는 기본 `/` 경로로 Health Check를 수행하므로 BackendConfi
 
 | 서비스 | Health Check Path | Port |
 |--------|------------------|------|
-| Grafana | `/api/health` | 3000 |
-| Prometheus | `/-/healthy` (또는 `/prometheus/-/healthy`) | 9090 |
+| Grafana (kube-prometheus-stack) | `/api/health` | 80 |
+| Prometheus (kube-prometheus-stack) | `/prometheus/-/healthy` | 9090 |
 | API Gateway | `/actuator/health` | 8080 |
 
 ## 모니터링 구성
@@ -98,7 +100,11 @@ GKE Ingress는 기본 `/` 경로로 Health Check를 수행하므로 BackendConfi
 | 파일 | Namespace | 목적 |
 |------|-----------|------|
 | `11-app-monitoring.yaml` | petclinic | PetClinic 서비스 메트릭 수집 |
-| `12-cluster-monitoring.yaml` | petclinic | K8s 클러스터 메트릭 (kube-prometheus-stack) |
+| `cluster-monitoring-ingress.yaml` | monitoring | kube-prometheus-stack Ingress (overlays에서 관리) |
+| `cluster-monitoring-backend-config.yaml` | monitoring | GKE Health Check 설정 (GCP only) |
+
+> **참고**: 클러스터 모니터링(kube-prometheus-stack)은 Helm으로 `monitoring` namespace에 설치됩니다.
+> Ingress도 동일한 namespace에 있어야 Service와 연결되므로, Kustomize의 namespace override를 피하기 위해 overlays에서 별도로 관리합니다.
 
 ## HPA (Horizontal Pod Autoscaler)
 
