@@ -1,8 +1,8 @@
-# PetClinic GitOps
+# 🐾 PetClinic GitOps
 
 ArgoCD 기반 PetClinic 애플리케이션 배포 매니페스트 (Kustomize + Multi-Cloud Overlay)
 
-## 아키텍처
+## 🏗️ 아키텍처
 
 ```
 petclinic-dev (소스코드) → GitHub Actions CI → petclinic-gitops (이 저장소)
@@ -17,7 +17,7 @@ petclinic-dev (소스코드) → GitHub Actions CI → petclinic-gitops (이 저
                EKS 배포                        GKE 배포
 ```
 
-## 디렉토리 구조
+## 📁 디렉토리 구조
 
 ```
 petclinic-gitops/
@@ -42,7 +42,7 @@ petclinic-gitops/
 │       └── cluster-monitoring-backend-config.yaml # GKE Health Check 설정 (monitoring ns)
 ```
 
-## Multi-Cloud 지원
+## ☁️ Multi-Cloud 지원
 
 | 항목 | AWS (Primary) | GCP (DR) |
 |------|---------------|----------|
@@ -52,7 +52,7 @@ petclinic-gitops/
 | 인증 | IRSA | Workload Identity |
 | ArgoCD Path | `overlays/aws` | `overlays/gcp` |
 
-## Kustomize Overlay 패턴
+## 🔧 Kustomize Overlay 패턴
 
 Base에 정의된 공통 리소스를 각 클라우드 환경에 맞게 오버라이드합니다.
 
@@ -75,7 +75,7 @@ images:
     newName: asia-northeast3-docker.pkg.dev/.../petclinic-*  # 이미지 교체
 ```
 
-## GCP Ingress 구성
+## 🌐 GCP Ingress 구성
 
 GCP에서는 여러 Ingress를 통합하여 LB 비용을 절감합니다.
 
@@ -85,7 +85,7 @@ GCP에서는 여러 Ingress를 통합하여 LB 비용을 절감합니다.
 | `monitoring-ingress` | 앱 모니터링 | `/` → Grafana, `/prometheus` → Prometheus |
 | `cluster-monitoring-ingress` | 클러스터 모니터링 | `/` → Grafana, `/prometheus` → Prometheus |
 
-### BackendConfig (Health Check)
+### 🏥 BackendConfig (Health Check)
 
 GKE Ingress는 기본 `/` 경로로 Health Check를 수행하므로 BackendConfig로 별도 설정합니다.
 
@@ -95,7 +95,7 @@ GKE Ingress는 기본 `/` 경로로 Health Check를 수행하므로 BackendConfi
 | Prometheus (kube-prometheus-stack) | `/prometheus/-/healthy` | 9090 |
 | API Gateway | `/actuator/health` | 8080 |
 
-## 모니터링 구성
+## 📊 모니터링 구성
 
 | 파일 | Namespace | 목적 |
 |------|-----------|------|
@@ -108,7 +108,7 @@ GKE Ingress는 기본 `/` 경로로 Health Check를 수행하므로 BackendConfi
 > - **AWS**: kube-prometheus-stack과 Ingress 모두 `petclinic` namespace에 설치
 > - **GCP**: kube-prometheus-stack과 Ingress 모두 `monitoring` namespace에 설치
 
-## HPA (Horizontal Pod Autoscaler)
+## ⚖️ HPA (Horizontal Pod Autoscaler)
 
 | 서비스 | minReplicas | maxReplicas | CPU 임계값 |
 |--------|-------------|-------------|------------|
@@ -132,7 +132,7 @@ spec:
         - /spec/replicas
 ```
 
-## Karpenter 노드 스케줄링 (AWS)
+## 🚀 Karpenter 노드 스케줄링 (AWS)
 
 AWS에서 PetClinic 워크로드가 Karpenter 노드에만 스케줄링되도록 설정:
 
@@ -142,7 +142,7 @@ nodeSelector:
   managed-by: karpenter
 ```
 
-## 수동 배포
+## 📦 수동 배포
 
 ```bash
 # AWS/GCP 환경 배포
@@ -154,7 +154,7 @@ kubectl kustomize overlays/aws
 kubectl kustomize overlays/gcp
 ```
 
-## 트러블슈팅
+## 🔍 트러블슈팅
 
 ### HPA 메트릭이 `<unknown>` 표시
 - **원인**: Metrics Server 미설치 (EKS 기본 미설치)
@@ -167,7 +167,7 @@ kubectl kustomize overlays/gcp
 ### External Secret 실패
 - **확인**: `kubectl describe externalsecret petclinic-db-secret -n petclinic`
 
-## 관련 저장소
+## 🔗 관련 저장소
 
 | 저장소 | 설명 |
 |--------|------|
