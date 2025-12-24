@@ -36,10 +36,10 @@ petclinic-gitops/
 │
 ├── overlays/
 │   ├── aws/                        # AWS 환경 (ECR + IRSA)
-│   │   └── cluster-monitoring-ingress.yaml  # kube-prometheus-stack Ingress (monitoring ns)
+│   │   └── cluster-monitoring-ingress.yaml  # kube-prometheus-stack Ingress (petclinic ns)
 │   └── gcp/                        # GCP 환경 (AR + Workload Identity)
 │       ├── cluster-monitoring-ingress.yaml       # kube-prometheus-stack Ingress (monitoring ns)
-│       └── cluster-monitoring-backend-config.yaml # GKE Health Check 설정
+│       └── cluster-monitoring-backend-config.yaml # GKE Health Check 설정 (monitoring ns)
 ```
 
 ## Multi-Cloud 지원
@@ -100,11 +100,13 @@ GKE Ingress는 기본 `/` 경로로 Health Check를 수행하므로 BackendConfi
 | 파일 | Namespace | 목적 |
 |------|-----------|------|
 | `11-app-monitoring.yaml` | petclinic | PetClinic 서비스 메트릭 수집 |
-| `cluster-monitoring-ingress.yaml` | monitoring | kube-prometheus-stack Ingress (overlays에서 관리) |
+| `cluster-monitoring-ingress.yaml` (AWS) | petclinic | kube-prometheus-stack Ingress |
+| `cluster-monitoring-ingress.yaml` (GCP) | monitoring | kube-prometheus-stack Ingress |
 | `cluster-monitoring-backend-config.yaml` | monitoring | GKE Health Check 설정 (GCP only) |
 
-> **참고**: 클러스터 모니터링(kube-prometheus-stack)은 Helm으로 `monitoring` namespace에 설치됩니다.
-> Ingress도 동일한 namespace에 있어야 Service와 연결되므로, Kustomize의 namespace override를 피하기 위해 overlays에서 별도로 관리합니다.
+> **참고**:
+> - **AWS**: kube-prometheus-stack과 Ingress 모두 `petclinic` namespace에 설치
+> - **GCP**: kube-prometheus-stack과 Ingress 모두 `monitoring` namespace에 설치
 
 ## HPA (Horizontal Pod Autoscaler)
 
