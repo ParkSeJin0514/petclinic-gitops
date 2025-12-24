@@ -2,6 +2,7 @@
 # BackendConfig for Cluster Monitoring (GKE Health Check)
 # ============================================================================
 # kube-prometheus-stack 서비스들의 GKE Health Check 설정
+# monitoring namespace에 배포되어야 함 (Service/Ingress와 같은 namespace)
 # ============================================================================
 
 ---
@@ -10,7 +11,7 @@ apiVersion: cloud.google.com/v1
 kind: BackendConfig
 metadata:
   name: grafana-cluster-backend-config
-  namespace: petclinic
+  namespace: monitoring
 spec:
   healthCheck:
     checkIntervalSec: 15
@@ -19,14 +20,14 @@ spec:
     unhealthyThreshold: 2
     type: HTTP
     requestPath: /api/health
-    port: 3000
+    port: 80
 ---
 # BackendConfig for Prometheus Health Check
 apiVersion: cloud.google.com/v1
 kind: BackendConfig
 metadata:
   name: prometheus-cluster-backend-config
-  namespace: petclinic
+  namespace: monitoring
 spec:
   healthCheck:
     checkIntervalSec: 15

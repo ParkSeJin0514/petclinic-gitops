@@ -1,6 +1,7 @@
 # ============================================================================
-# Cluster Monitoring Ingress - GKE (Grafana + Prometheus 통합)
+# Cluster Monitoring Ingress - GKE (kube-prometheus-stack)
 # ============================================================================
+# monitoring namespace에 배포되어야 함 (Service와 같은 namespace)
 # / → Grafana
 # /prometheus → Prometheus
 # ============================================================================
@@ -8,10 +9,10 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: cluster-monitoring-ingress
-  namespace: petclinic
+  namespace: monitoring
   annotations:
     kubernetes.io/ingress.class: gce
-    cloud.google.com/backend-config: '{"ports": {"3000": "grafana-cluster-backend-config", "9090": "prometheus-cluster-backend-config"}}'
+    cloud.google.com/backend-config: '{"ports": {"80": "grafana-cluster-backend-config", "9090": "prometheus-cluster-backend-config"}}'
 spec:
   ingressClassName: gce
   rules:
@@ -21,13 +22,13 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: grafana-server
+                name: kube-prometheus-stack-grafana
                 port:
-                  number: 3000
+                  number: 80
           - path: /prometheus
             pathType: Prefix
             backend:
               service:
-                name: prometheus-server
+                name: kube-prometheus-stack-prometheus
                 port:
                   number: 9090
