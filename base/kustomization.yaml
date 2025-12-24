@@ -13,4 +13,5 @@ resources:
   - manifests/08-hpa.yaml
   - manifests/10-ingress.yaml
   - manifests/11-app-monitoring.yaml
-  - manifests/12-cluster-monitoring.yaml
+  # 12-cluster-monitoring.yaml은 monitoring namespace에 배포해야 하므로
+  # AWS overlay에서 별도로 처리 (namespace override 방지)
