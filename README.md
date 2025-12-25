@@ -108,18 +108,29 @@ metadata:
   name: api-gateway
   annotations:
     cloud.google.com/backend-config: '{"default": "api-gateway-backend-config"}'
-    cloud.google.com/neg: '{"ingress": true}'  # NEG 필수!
+    # NEG 이름 고정 - Load Balancer 백엔드 서비스에서 항상 동일한 NEG 참조
+    cloud.google.com/neg: '{"exposed_ports": {"8080":{"name": "petclinic-api-gateway-neg"}}}'
 spec:
   type: NodePort
 ```
 
-**NEG vs Instance Group 차이점:**
+**NEG 타입 비교:**
 
-| 항목 | Instance Group (기본) | NEG |
-|------|----------------------|-----|
-| BackendConfig | 적용 안됨 | 정상 적용 |
-| Health Check | 기본 `/` 경로 사용 | BackendConfig 설정 사용 |
-| 백엔드 이름 | `k8s-be-<port>--xxx` | `k8s1-xxx-<namespace>-<service>-<port>-xxx` |
+| 항목 | `{"ingress": true}` | `{"exposed_ports": {...}}` (현재 사용) |
+|------|---------------------|---------------------------------------|
+| NEG 이름 | 자동 생성 (랜덤 해시) | **고정 이름** |
+| 클러스터 재생성 시 | 이름 변경됨 | **이름 유지** |
+| 외부 LB 연동 | 매번 재연결 필요 | **한 번만 설정** |
+| 관리 방식 | GKE Ingress 연동 | Standalone (외부 LB용) |
+
+**Instance Group vs NEG:**
+
+| 항목 | Instance Group | NEG |
+|------|----------------|-----|
+| 트래픽 경로 | LB → Node → Pod | **LB → Pod (직접)** |
+| Health Check | Node 레벨 | **Pod 레벨** |
+| 성능 | 보통 | **더 빠름** |
+| GCP 권장 | 레거시 | **권장** |
 
 > **중요**: NEG annotation 추가 후 Ingress를 삭제/재생성해야 NEG 백엔드로 전환됩니다.
 
@@ -223,42 +234,49 @@ kubectl kustomize overlays/gcp
 
 ### 외부 LB (psj0514-static-lb)와 GKE 연동
 
-수동으로 생성한 외부 LB를 GKE 서비스와 연동할 때 NEG 타입 선택이 중요합니다.
+수동으로 생성한 외부 LB를 GKE 서비스와 연동할 때 **고정 NEG 이름**을 사용합니다.
 
-**NEG 타입 비교:**
+**현재 구성:**
 
-| 항목 | GKE Auto NEG | Standalone NEG |
-|------|-------------|----------------|
-| Annotation | `{"ingress": true}` | `{"exposed_ports": {"8080":{"name": "..."}}}` |
-| 이름 | 자동 생성 (`k8s1-xxx-...`) | 고정 이름 |
-| 엔드포인트 관리 | GKE 자동 관리 | **Ingress 존재 시 자동 등록 안됨** |
-| 클러스터 재생성 시 | 이름 변경됨 | 이름 유지 |
+| 서비스 | NEG 이름 | 포트 |
+|--------|----------|------|
+| api-gateway | `petclinic-api-gateway-neg` | 8080 |
+| admin-server | `petclinic-admin-server-neg` | 9090 |
 
-**권장 방식:** GKE auto NEG (`{"ingress": true}`)
-- 클러스터 재생성 시 Backend Service 업데이트 필요하지만, 엔드포인트가 자동 관리됨
+**Service Annotation 설정:**
 
-**외부 LB Backend 업데이트 방법:**
+```yaml
+# overlays/gcp/service-patch.yaml
+metadata:
+  annotations:
+    cloud.google.com/neg: '{"exposed_ports": {"8080":{"name": "petclinic-api-gateway-neg"}}}'
+```
+
+**클러스터 재생성 후 작업:**
+
+1. NEG가 자동 생성됨 (이름 고정)
+2. GCP 콘솔에서 Load Balancer 백엔드 서비스에 NEG 연결
+   - 백엔드 유형: `영역별 네트워크 엔드포인트 그룹`
+   - NEG 선택: `petclinic-api-gateway-neg`
+   - Zone: Pod가 있는 zone 선택 (SIZE > 0인 것)
+
+**NEG 상태 확인:**
 
 ```bash
-# 1. 현재 GKE auto NEG 확인
-gcloud compute network-endpoint-groups list --filter="name~k8s1.*api-gateway" \
-  --format="table(name,zone,size)" --project=PROJECT_ID
+# NEG 목록 및 엔드포인트 수 확인
+gcloud compute network-endpoint-groups list \
+  --filter="name=petclinic-api-gateway-neg" \
+  --project=kdt2-final-project-t1
 
-# 2. 기존 빈 NEG 제거 (각 zone별로)
-gcloud compute backend-services remove-backend BACKEND_SERVICE --global \
-  --network-endpoint-group=OLD_NEG_NAME \
-  --network-endpoint-group-zone=ZONE
-
-# 3. GKE auto NEG 추가 (엔드포인트가 있는 zone만)
-gcloud compute backend-services add-backend BACKEND_SERVICE --global \
-  --network-endpoint-group=k8s1-xxx-petclinic-api-gateway-8080-xxx \
-  --network-endpoint-group-zone=ZONE \
-  --balancing-mode=RATE \
-  --max-rate-per-endpoint=1000
-
-# 4. Health 상태 확인
-gcloud compute backend-services get-health BACKEND_SERVICE --global
+# 백엔드 서비스 Health 상태 확인
+gcloud compute backend-services get-health petclinic-gke-backend --global \
+  --project=kdt2-final-project-t1
 ```
+
+**주의사항:**
+- 클러스터 삭제 시 NEG가 Load Balancer에 연결되어 있으면 삭제 실패
+- 삭제 전 백엔드 서비스에서 NEG 연결 해제 필요
+- 또는 GitHub Actions workflow에서 NEG 정리 스크립트 실행
 
 ## 🔗 관련 저장소
 
