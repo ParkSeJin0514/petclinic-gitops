@@ -91,9 +91,37 @@ GKE Ingress는 기본 `/` 경로로 Health Check를 수행하므로 BackendConfi
 
 | 서비스 | Health Check Path | Port |
 |--------|------------------|------|
+| API Gateway | `/actuator/health` | 8080 |
+| Admin Server | `/actuator/health` | 9090 |
 | Grafana (kube-prometheus-stack) | `/api/health` | 80 |
 | Prometheus (kube-prometheus-stack) | `/prometheus/-/healthy` | 9090 |
-| API Gateway | `/actuator/health` | 8080 |
+
+### 🔗 NEG (Network Endpoint Group)
+
+GCE Ingress에서 BackendConfig Health Check가 올바르게 적용되려면 **NEG annotation**이 필수입니다.
+
+```yaml
+# overlays/gcp/service-patch.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway
+  annotations:
+    cloud.google.com/backend-config: '{"default": "api-gateway-backend-config"}'
+    cloud.google.com/neg: '{"ingress": true}'  # NEG 필수!
+spec:
+  type: NodePort
+```
+
+**NEG vs Instance Group 차이점:**
+
+| 항목 | Instance Group (기본) | NEG |
+|------|----------------------|-----|
+| BackendConfig | 적용 안됨 | 정상 적용 |
+| Health Check | 기본 `/` 경로 사용 | BackendConfig 설정 사용 |
+| 백엔드 이름 | `k8s-be-<port>--xxx` | `k8s1-xxx-<namespace>-<service>-<port>-xxx` |
+
+> **중요**: NEG annotation 추가 후 Ingress를 삭제/재생성해야 NEG 백엔드로 전환됩니다.
 
 ## 📊 모니터링 구성
 
@@ -165,6 +193,22 @@ kubectl kustomize overlays/gcp
 ```
 
 ## 🔍 트러블슈팅
+
+### GCE Ingress 502 Bad Gateway
+- **원인**: BackendConfig Health Check가 적용되지 않음 (Instance Group 사용 시)
+- **확인**:
+  ```bash
+  kubectl get ingress petclinic-ingress -n petclinic -o jsonpath='{.metadata.annotations.ingress\.kubernetes\.io/backends}' | python3 -m json.tool
+  ```
+- **해결**:
+  1. Service에 NEG annotation 추가: `cloud.google.com/neg: '{"ingress": true}'`
+  2. Ingress 삭제 후 재생성: `kubectl delete ingress petclinic-ingress -n petclinic`
+  3. 백엔드가 `k8s1-xxx-...` 형태로 바뀌고 HEALTHY가 되면 정상
+
+### GCE Ingress UNHEALTHY 백엔드
+- **원인**: Health Check 경로 불일치
+- **확인**: BackendConfig의 `requestPath`가 실제 서비스의 health endpoint와 일치하는지 확인
+- **해결**: BackendConfig 수정 후 Ingress 재생성
 
 ### HPA 메트릭이 `<unknown>` 표시
 - **원인**: Metrics Server 미설치 (EKS 기본 미설치)
