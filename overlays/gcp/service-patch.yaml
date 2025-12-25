@@ -2,6 +2,7 @@
 # Service Patches - GCE Ingress용 NodePort + BackendConfig + NEG
 # ============================================================================
 # NEG annotation으로 GKE가 자동으로 NEG 생성 및 엔드포인트 관리
+# 외부 LB (psj0514-static-lb) 사용 시 클러스터 재생성 후 NEG 재연결 필요
 # ============================================================================
 apiVersion: v1
 kind: Service
@@ -10,8 +11,8 @@ metadata:
   namespace: petclinic
   annotations:
     cloud.google.com/backend-config: '{"default": "api-gateway-backend-config"}'
-    # NEG 이름 고정 - Load Balancer 백엔드 서비스에서 항상 동일한 NEG 참조
-    cloud.google.com/neg: '{"exposed_ports": {"8080":{"name": "petclinic-api-gateway-neg"}}}'
+    # NEG 자동 생성 - 클러스터 재생성 시 새 NEG 생성되므로 백엔드 서비스 재연결 필요
+    cloud.google.com/neg: '{"ingress": true}'
 spec:
   type: NodePort
 ---
@@ -22,8 +23,8 @@ metadata:
   namespace: petclinic
   annotations:
     cloud.google.com/backend-config: '{"default": "admin-server-backend-config"}'
-    # NEG 이름 고정
-    cloud.google.com/neg: '{"exposed_ports": {"9090":{"name": "petclinic-admin-server-neg"}}}'
+    # NEG 자동 생성
+    cloud.google.com/neg: '{"ingress": true}'
 spec:
   type: NodePort
 ---
