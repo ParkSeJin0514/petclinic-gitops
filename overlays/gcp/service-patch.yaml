@@ -1,7 +1,7 @@
 # ============================================================================
-# Service Patches - GCE Ingress용 NodePort + BackendConfig + Standalone NEG
+# Service Patches - GCE Ingress용 NodePort + BackendConfig + NEG
 # ============================================================================
-# Standalone NEG: 클러스터 재생성 시에도 NEG 이름 유지 + 엔드포인트 자동 등록
+# NEG annotation으로 GKE가 자동으로 NEG 생성 및 엔드포인트 관리
 # ============================================================================
 apiVersion: v1
 kind: Service
@@ -10,7 +10,7 @@ metadata:
   namespace: petclinic
   annotations:
     cloud.google.com/backend-config: '{"default": "api-gateway-backend-config"}'
-    cloud.google.com/neg: '{"exposed_ports": {"8080":{"name": "petclinic-api-gateway-neg"}}}'
+    cloud.google.com/neg: '{"ingress": true}'
 spec:
   type: NodePort
 ---
@@ -21,7 +21,7 @@ metadata:
   namespace: petclinic
   annotations:
     cloud.google.com/backend-config: '{"default": "admin-server-backend-config"}'
-    cloud.google.com/neg: '{"exposed_ports": {"9090":{"name": "petclinic-admin-server-neg"}}}'
+    cloud.google.com/neg: '{"ingress": true}'
 spec:
   type: NodePort
 ---
