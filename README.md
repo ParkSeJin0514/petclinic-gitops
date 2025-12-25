@@ -221,6 +221,45 @@ kubectl kustomize overlays/gcp
 ### External Secret 실패
 - **확인**: `kubectl describe externalsecret petclinic-db-secret -n petclinic`
 
+### 외부 LB (psj0514-static-lb)와 GKE 연동
+
+수동으로 생성한 외부 LB를 GKE 서비스와 연동할 때 NEG 타입 선택이 중요합니다.
+
+**NEG 타입 비교:**
+
+| 항목 | GKE Auto NEG | Standalone NEG |
+|------|-------------|----------------|
+| Annotation | `{"ingress": true}` | `{"exposed_ports": {"8080":{"name": "..."}}}` |
+| 이름 | 자동 생성 (`k8s1-xxx-...`) | 고정 이름 |
+| 엔드포인트 관리 | GKE 자동 관리 | **Ingress 존재 시 자동 등록 안됨** |
+| 클러스터 재생성 시 | 이름 변경됨 | 이름 유지 |
+
+**권장 방식:** GKE auto NEG (`{"ingress": true}`)
+- 클러스터 재생성 시 Backend Service 업데이트 필요하지만, 엔드포인트가 자동 관리됨
+
+**외부 LB Backend 업데이트 방법:**
+
+```bash
+# 1. 현재 GKE auto NEG 확인
+gcloud compute network-endpoint-groups list --filter="name~k8s1.*api-gateway" \
+  --format="table(name,zone,size)" --project=PROJECT_ID
+
+# 2. 기존 빈 NEG 제거 (각 zone별로)
+gcloud compute backend-services remove-backend BACKEND_SERVICE --global \
+  --network-endpoint-group=OLD_NEG_NAME \
+  --network-endpoint-group-zone=ZONE
+
+# 3. GKE auto NEG 추가 (엔드포인트가 있는 zone만)
+gcloud compute backend-services add-backend BACKEND_SERVICE --global \
+  --network-endpoint-group=k8s1-xxx-petclinic-api-gateway-8080-xxx \
+  --network-endpoint-group-zone=ZONE \
+  --balancing-mode=RATE \
+  --max-rate-per-endpoint=1000
+
+# 4. Health 상태 확인
+gcloud compute backend-services get-health BACKEND_SERVICE --global
+```
+
 ## 🔗 관련 저장소
 
 | 저장소 | 설명 |
