@@ -11,8 +11,17 @@ resources:
   - cluster-monitoring-backend-config.yaml
   - cluster-monitoring-ingress.yaml
 patches:
-  - path: petclinic-ingress-patch.yaml
   - path: service-patch.yaml
+  # petclinic-ingress 삭제 (외부 LB psj0514-static-lb 사용)
+  - target:
+      kind: Ingress
+      name: petclinic-ingress
+    patch: |
+      $patch: delete
+      apiVersion: networking.k8s.io/v1
+      kind: Ingress
+      metadata:
+        name: petclinic-ingress
   # grafana-ingress, prometheus-ingress 삭제 (앱 모니터링은 monitoring-ingress.yaml로 대체)
   - target:
       kind: Ingress
