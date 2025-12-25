@@ -7,6 +7,7 @@ resources:
   - external-secret.yaml
   - backend-config.yaml
   - monitoring-ingress.yaml
+  # cluster-monitoring Ingress (kube-prometheus-stack용)
   - cluster-monitoring-backend-config.yaml
   - cluster-monitoring-ingress.yaml
 patches:

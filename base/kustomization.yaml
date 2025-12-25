@@ -13,5 +13,6 @@ resources:
   - manifests/08-hpa.yaml
   - manifests/10-ingress.yaml
   - manifests/11-app-monitoring.yaml
-  # 12-cluster-monitoring.yaml은 monitoring namespace에 배포해야 하므로
-  # AWS overlay에서 별도로 처리 (namespace override 방지)
+  # kube-prometheus-stack: Terraform에서 Helm 설치, Ingress는 overlays에서 관리
+  # - overlays/aws/cluster-monitoring-ingress.yaml (ALB)
+  # - overlays/gcp/cluster-monitoring-ingress.yaml (GCE)

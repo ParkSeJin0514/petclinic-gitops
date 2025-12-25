@@ -1,7 +1,7 @@
 # ============================================================================
 # Cluster Monitoring Ingress - GKE (kube-prometheus-stack)
 # ============================================================================
-# monitoring namespace에 배포되어야 함 (Service와 같은 namespace)
+# monitoring namespace에 배포 (kube-prometheus-stack과 같은 namespace)
 # / → Grafana
 # /prometheus → Prometheus
 # ============================================================================
@@ -12,7 +12,6 @@ metadata:
   namespace: monitoring
   annotations:
     kubernetes.io/ingress.class: gce
-    cloud.google.com/backend-config: '{"ports": {"80": "grafana-cluster-backend-config", "9090": "prometheus-cluster-backend-config"}}'
 spec:
   ingressClassName: gce
   rules:

@@ -5,7 +5,7 @@ resources:
   - ../../base
   # ClusterSecretStore는 platform-gitops/external-secrets에서 관리
   - external-secret.yaml
-  # cluster-monitoring Ingress (monitoring namespace - namespace override 제외)
+  # cluster-monitoring Ingress (kube-prometheus-stack용)
   - cluster-monitoring-ingress.yaml
 # Karpenter 노드 스케줄링을 위한 patch
 patches:

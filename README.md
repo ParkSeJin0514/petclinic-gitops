@@ -36,10 +36,10 @@ petclinic-gitops/
 │
 ├── overlays/
 │   ├── aws/                        # AWS 환경 (ECR + IRSA)
-│   │   └── cluster-monitoring-ingress.yaml  # kube-prometheus-stack Ingress (petclinic ns)
+│   │   └── cluster-monitoring-ingress.yaml  # kube-prometheus-stack ALB Ingress
 │   └── gcp/                        # GCP 환경 (AR + Workload Identity)
-│       ├── cluster-monitoring-ingress.yaml       # kube-prometheus-stack Ingress (monitoring ns)
-│       └── cluster-monitoring-backend-config.yaml # GKE Health Check 설정 (monitoring ns)
+│       ├── cluster-monitoring-ingress.yaml       # kube-prometheus-stack GCE Ingress
+│       └── cluster-monitoring-backend-config.yaml # GKE Health Check 설정
 ```
 
 ## ☁️ Multi-Cloud 지원
@@ -97,16 +97,26 @@ GKE Ingress는 기본 `/` 경로로 Health Check를 수행하므로 BackendConfi
 
 ## 📊 모니터링 구성
 
+### Cluster Monitoring (kube-prometheus-stack)
+
+- **Helm 설치**: Terraform compute 모듈에서 자동 설치
+- **Ingress 관리**: petclinic-gitops에서 통합 관리 (이 저장소)
+
+| 항목 | AWS | GCP |
+|------|-----|-----|
+| Namespace | `petclinic` | `petclinic` |
+| Ingress 파일 | `overlays/aws/cluster-monitoring-ingress.yaml` | `overlays/gcp/cluster-monitoring-ingress.yaml` |
+| Ingress Class | ALB | GCE |
+| Grafana URL | `http://<ALB>/` | `http://<GCE-LB>/` |
+| Prometheus URL | `http://<ALB>/prometheus` | `http://<GCE-LB>/prometheus` |
+
+> **참고**: Terraform은 Helm Chart만 설치하고, 모든 Ingress는 이 저장소에서 GitOps로 관리합니다.
+
+### Application Monitoring
+
 | 파일 | Namespace | 목적 |
 |------|-----------|------|
-| `11-app-monitoring.yaml` | petclinic | PetClinic 서비스 메트릭 수집 |
-| `cluster-monitoring-ingress.yaml` (AWS) | petclinic | kube-prometheus-stack Ingress |
-| `cluster-monitoring-ingress.yaml` (GCP) | monitoring | kube-prometheus-stack Ingress |
-| `cluster-monitoring-backend-config.yaml` | monitoring | GKE Health Check 설정 (GCP only) |
-
-> **참고**:
-> - **AWS**: kube-prometheus-stack과 Ingress 모두 `petclinic` namespace에 설치
-> - **GCP**: kube-prometheus-stack과 Ingress 모두 `monitoring` namespace에 설치
+| `11-app-monitoring.yaml` | petclinic | PetClinic 서비스 메트릭 수집 (ServiceMonitor) |
 
 ## ⚖️ HPA (Horizontal Pod Autoscaler)
 
