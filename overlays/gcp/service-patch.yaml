@@ -10,7 +10,8 @@ metadata:
   namespace: petclinic
   annotations:
     cloud.google.com/backend-config: '{"default": "api-gateway-backend-config"}'
-    cloud.google.com/neg: '{"ingress": true}'
+    # NEG 이름 고정 - Load Balancer 백엔드 서비스에서 항상 동일한 NEG 참조
+    cloud.google.com/neg: '{"exposed_ports": {"8080":{"name": "petclinic-api-gateway-neg"}}}'
 spec:
   type: NodePort
 ---
@@ -21,7 +22,8 @@ metadata:
   namespace: petclinic
   annotations:
     cloud.google.com/backend-config: '{"default": "admin-server-backend-config"}'
-    cloud.google.com/neg: '{"ingress": true}'
+    # NEG 이름 고정
+    cloud.google.com/neg: '{"exposed_ports": {"9090":{"name": "petclinic-admin-server-neg"}}}'
 spec:
   type: NodePort
 ---
