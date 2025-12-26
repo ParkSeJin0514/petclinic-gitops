@@ -118,11 +118,11 @@ spec:
 | 항목 | `{"ingress": true}` (현재 사용) | `{"exposed_ports": {...}}` |
 |------|-------------------------------|----------------------------|
 | NEG 이름 | 자동 생성 (랜덤 해시) | 고정 이름 |
-| 클러스터 재생성 시 | 새 NEG 생성 | cluster-uid 충돌로 실패 |
-| 외부 LB 연동 | 매번 재연결 필요 | 매번 재연결 필요 |
-| 권장 | **권장** | 비권장 (cluster-uid 문제) |
+| NEG 생성 조건 | **Ingress 존재 필수** | Ingress 없이도 생성 |
+| 클러스터 재생성 시 | 새 NEG 자동 생성 | cluster-uid 충돌 가능 |
+| 권장 | **GKE Ingress 사용 시 권장** | 외부 LB 단독 사용 시 |
 
-> **중요**: NEG는 cluster-uid를 description에 포함하므로, 고정 이름(`exposed_ports`)을 사용해도 클러스터 재생성 시 기존 NEG를 재사용할 수 없습니다. 따라서 `{"ingress": true}`를 사용하는 것이 더 단순합니다.
+> **현재 구성**: GKE Ingress + Static IP 사용으로 LB, NEG, Health Check가 자동 관리됩니다.
 
 **Instance Group vs NEG:**
 
@@ -233,45 +233,40 @@ kubectl kustomize overlays/gcp
 ### External Secret 실패
 - **확인**: `kubectl describe externalsecret petclinic-db-secret -n petclinic`
 
-### 외부 LB (psj0514-static-lb)와 GKE 연동
+### GKE Ingress + Static IP
 
-수동으로 생성한 외부 LB를 GKE 서비스와 연동합니다. GKE Ingress를 사용하지 않고 외부 LB만 사용합니다.
+GKE Ingress를 사용하여 LB, NEG, Health Check가 자동으로 관리됩니다.
 
 **현재 구성:**
-- petclinic-ingress: 삭제됨 (외부 LB 사용)
-- NEG annotation: `{"ingress": true}` (자동 이름 생성)
+- petclinic-ingress: GCE Ingress (자동 LB 생성)
+- Static IP: `petclinic-static-ip` (34.107.131.21)
+- NEG annotation: `{"ingress": true}` (자동 관리)
 
-**클러스터 재생성 후 작업:**
-
-1. ArgoCD Sync로 Service 배포 (NEG 자동 생성됨)
-2. NEG 이름 확인:
-   ```bash
-   gcloud compute network-endpoint-groups list \
-     --filter="name~k8s1.*petclinic.*api-gateway" \
-     --project=kdt2-final-project-t1
-   ```
-3. GCP 콘솔에서 Load Balancer 백엔드 서비스에 NEG 연결
-   - 백엔드 유형: `영역별 네트워크 엔드포인트 그룹`
-   - NEG 선택: `k8s1-...-petclinic-api-gateway-...` (SIZE > 0인 것)
-   - Zone: Pod가 있는 zone 선택
-
-**NEG 상태 확인:**
-
+**Static IP 예약:**
 ```bash
-# NEG 목록 및 엔드포인트 수 확인
-gcloud compute network-endpoint-groups list \
-  --filter="name~k8s1.*petclinic" \
-  --project=kdt2-final-project-t1
+# Global Static IP 생성
+gcloud compute addresses create petclinic-static-ip --global --project=kdt2-final-project-t1
 
-# 백엔드 서비스 Health 상태 확인
-gcloud compute backend-services get-health petclinic-gke-backend --global \
-  --project=kdt2-final-project-t1
+# IP 확인
+gcloud compute addresses describe petclinic-static-ip --global --format="value(address)"
 ```
 
-**주의사항:**
-- 클러스터 삭제 시 NEG가 Load Balancer에 연결되어 있으면 삭제 실패
-- 삭제 전 백엔드 서비스에서 NEG 연결 해제 필요
-- 클러스터 재생성 후 NEG 이름이 변경되므로 백엔드 서비스 재연결 필수
+**Ingress 설정:**
+```yaml
+# overlays/gcp/petclinic-ingress-patch.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: petclinic-ingress
+  annotations:
+    kubernetes.io/ingress.class: gce
+    kubernetes.io/ingress.global-static-ip-name: petclinic-static-ip
+```
+
+**클러스터 재생성 후:**
+- Static IP를 사용하므로 IP 주소 유지
+- Ingress Controller가 자동으로 LB + NEG + Health Check 재생성
+- 추가 작업 없음 (자동화)
 
 ## 🔗 관련 저장소
 
