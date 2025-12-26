@@ -16,19 +16,19 @@ images:
     newTag: "16"
   - name: springcommunity/spring-petclinic-discovery-server
     newName: 946775837287.dkr.ecr.ap-northeast-2.amazonaws.com/petclinic-msa/petclinic-discovery-server
-    newTag: "16"
+    newTag: "29"
   - name: springcommunity/spring-petclinic-customers-service
     newName: 946775837287.dkr.ecr.ap-northeast-2.amazonaws.com/petclinic-msa/petclinic-customers-service
-    newTag: "16"
+    newTag: "29"
   - name: springcommunity/spring-petclinic-visits-service
     newName: 946775837287.dkr.ecr.ap-northeast-2.amazonaws.com/petclinic-msa/petclinic-visits-service
-    newTag: "16"
+    newTag: "29"
   - name: springcommunity/spring-petclinic-vets-service
     newName: 946775837287.dkr.ecr.ap-northeast-2.amazonaws.com/petclinic-msa/petclinic-vets-service
-    newTag: "16"
+    newTag: "29"
   - name: springcommunity/spring-petclinic-api-gateway
     newName: 946775837287.dkr.ecr.ap-northeast-2.amazonaws.com/petclinic-msa/petclinic-api-gateway
-    newTag: "28"
+    newTag: "29"
   - name: springcommunity/spring-petclinic-admin-server
     newName: 946775837287.dkr.ecr.ap-northeast-2.amazonaws.com/petclinic-msa/petclinic-admin-server
-    newTag: "16"
+    newTag: "29"
