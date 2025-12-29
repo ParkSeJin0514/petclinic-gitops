@@ -13,22 +13,22 @@ patches:
 images:
   - name: springcommunity/spring-petclinic-config-server
     newName: 946775837287.dkr.ecr.ap-northeast-2.amazonaws.com/petclinic-msa/petclinic-config-server
-    newTag: "16"
+    newTag: "32"
   - name: springcommunity/spring-petclinic-discovery-server
     newName: 946775837287.dkr.ecr.ap-northeast-2.amazonaws.com/petclinic-msa/petclinic-discovery-server
-    newTag: "30"
+    newTag: "32"
   - name: springcommunity/spring-petclinic-customers-service
     newName: 946775837287.dkr.ecr.ap-northeast-2.amazonaws.com/petclinic-msa/petclinic-customers-service
-    newTag: "30"
+    newTag: "32"
   - name: springcommunity/spring-petclinic-visits-service
     newName: 946775837287.dkr.ecr.ap-northeast-2.amazonaws.com/petclinic-msa/petclinic-visits-service
-    newTag: "30"
+    newTag: "32"
   - name: springcommunity/spring-petclinic-vets-service
     newName: 946775837287.dkr.ecr.ap-northeast-2.amazonaws.com/petclinic-msa/petclinic-vets-service
-    newTag: "30"
+    newTag: "32"
   - name: springcommunity/spring-petclinic-api-gateway
     newName: 946775837287.dkr.ecr.ap-northeast-2.amazonaws.com/petclinic-msa/petclinic-api-gateway
-    newTag: "30"
+    newTag: "32"
   - name: springcommunity/spring-petclinic-admin-server
     newName: 946775837287.dkr.ecr.ap-northeast-2.amazonaws.com/petclinic-msa/petclinic-admin-server
-    newTag: "30"
+    newTag: "32"

@@ -66,22 +66,22 @@ patches:
 images:
   - name: springcommunity/spring-petclinic-config-server
     newName: asia-northeast3-docker.pkg.dev/kdt2-final-project-t1/petclinic-msa/petclinic-config-server
-    newTag: "16"
+    newTag: "32"
   - name: springcommunity/spring-petclinic-discovery-server
     newName: asia-northeast3-docker.pkg.dev/kdt2-final-project-t1/petclinic-msa/petclinic-discovery-server
-    newTag: "30"
+    newTag: "32"
   - name: springcommunity/spring-petclinic-customers-service
     newName: asia-northeast3-docker.pkg.dev/kdt2-final-project-t1/petclinic-msa/petclinic-customers-service
-    newTag: "30"
+    newTag: "32"
   - name: springcommunity/spring-petclinic-visits-service
     newName: asia-northeast3-docker.pkg.dev/kdt2-final-project-t1/petclinic-msa/petclinic-visits-service
-    newTag: "30"
+    newTag: "32"
   - name: springcommunity/spring-petclinic-vets-service
     newName: asia-northeast3-docker.pkg.dev/kdt2-final-project-t1/petclinic-msa/petclinic-vets-service
-    newTag: "30"
+    newTag: "32"
   - name: springcommunity/spring-petclinic-api-gateway
     newName: asia-northeast3-docker.pkg.dev/kdt2-final-project-t1/petclinic-msa/petclinic-api-gateway
-    newTag: "30"
+    newTag: "32"
   - name: springcommunity/spring-petclinic-admin-server
     newName: asia-northeast3-docker.pkg.dev/kdt2-final-project-t1/petclinic-msa/petclinic-admin-server
-    newTag: "30"
+    newTag: "32"
