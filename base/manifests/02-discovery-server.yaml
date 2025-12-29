@@ -10,6 +10,11 @@ metadata:
     tier: infrastructure
 spec:
   replicas: 1  # Eureka는 단일 인스턴스로 시작
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: discovery-server
