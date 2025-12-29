@@ -12,12 +12,13 @@ metadata:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/load-balancer-name: petclinic-microservices-alb
-    
-    # HTTPS 설정 (ACM 인증서 ARN을 실제 값으로 교체)
-    # alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-northeast-2:946775837287:certificate/your-cert-id
-    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
-    # alb.ingress.kubernetes.io/ssl-redirect: '443'
-    
+
+    # HTTPS 설정 (HTTP → HTTPS 리다이렉트)
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:ap-northeast-2:946775837287:certificate/c20e2155-8929-407f-bccf-08aa07edfbdf
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS": 443}]'
+    alb.ingress.kubernetes.io/ssl-redirect: '443'
+    alb.ingress.kubernetes.io/ssl-policy: ELBSecurityPolicy-TLS13-1-2-2021-06
+
     # Health Check 설정
     alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
     alb.ingress.kubernetes.io/healthcheck-path: /actuator/health
