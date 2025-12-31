@@ -3,6 +3,7 @@ kind: Kustomization
 namespace: petclinic
 resources:
   - manifests/00-namespace.yaml
+  - manifests/00-rbac.yaml
   - manifests/01-config-server.yaml
   - manifests/02-discovery-server.yaml
   - manifests/03-customers-service.yaml

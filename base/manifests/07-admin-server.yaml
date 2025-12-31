@@ -24,6 +24,7 @@ spec:
         app: admin-server
         tier: monitoring
     spec:
+      serviceAccountName: admin-server-sa
       containers:
         - name: admin-server
           image: springcommunity/spring-petclinic-admin-server:latest

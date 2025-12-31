@@ -25,6 +25,7 @@ petclinic-gitops/
 │   ├── kustomization.yaml
 │   └── manifests/
 │       ├── 00-namespace.yaml       # petclinic 네임스페이스
+│       ├── 00-rbac.yaml            # ServiceAccount (Pod별 격리)
 │       ├── 01-config-server.yaml   # Spring Cloud Config
 │       ├── 02-discovery-server.yaml # Eureka
 │       ├── 03~05-*-service.yaml    # customers, visits, vets
@@ -267,6 +268,42 @@ metadata:
 - Static IP를 사용하므로 IP 주소 유지
 - Ingress Controller가 자동으로 LB + NEG + Health Check 재생성
 - 추가 작업 없음 (자동화)
+
+## 🔐 RBAC 및 보안 설계
+
+### ServiceAccount 분리 (Pod 격리)
+
+모든 서비스는 개별 ServiceAccount를 사용하여 Pod별 격리 및 최소 권한 원칙을 구현합니다.
+
+| 서비스 | ServiceAccount | Tier |
+|--------|----------------|------|
+| config-server | `config-server-sa` | infrastructure |
+| discovery-server | `discovery-server-sa` | infrastructure |
+| api-gateway | `api-gateway-sa` | infrastructure |
+| admin-server | `admin-server-sa` | infrastructure |
+| customers-service | `customers-service-sa` | business |
+| vets-service | `vets-service-sa` | business |
+| visits-service | `visits-service-sa` | business |
+
+### 보안 원칙
+
+| 원칙 | 구현 내용 |
+|------|----------|
+| **최소 권한 (Least Privilege)** | 서비스별 SA 분리, 필요한 권한만 부여 |
+| **Pod 격리** | default SA 사용 금지, 개별 SA로 격리 |
+| **감사/추적 (Auditing)** | SA 단위로 API 호출 추적 가능 |
+
+### IRSA/Workload Identity 적용 대상
+
+| 구분 | 컴포넌트 | IRSA (AWS) | Workload Identity (GCP) |
+|------|----------|:----------:|:-----------------------:|
+| 인프라 | ALB Controller | ✅ | - |
+| 인프라 | EBS/EFS CSI Driver | ✅ | - |
+| 인프라 | External Secrets | ✅ | ✅ |
+| 앱 | PetClinic 서비스 | ❌ (불필요) | ❌ (불필요) |
+
+> **참고**: PetClinic 앱 서비스는 AWS/GCP 리소스에 직접 접근하지 않으므로 IRSA/Workload Identity가 불필요합니다.
+> DB 자격증명은 External Secrets Operator를 통해 주입됩니다.
 
 ## 🔗 관련 저장소
 

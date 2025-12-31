@@ -1,0 +1,77 @@
+# ============================================================================
+# PetClinic RBAC - ServiceAccounts
+# ============================================================================
+# 서비스별 ServiceAccount 분리로 Pod 격리 및 최소 권한 원칙 구현
+# - 각 서비스는 개별 ServiceAccount 사용
+# - default ServiceAccount 사용 금지
+# - 감사/추적 용이성 확보
+# ============================================================================
+
+---
+# Infrastructure Services
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: config-server-sa
+  namespace: petclinic
+  labels:
+    app: config-server
+    tier: infrastructure
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: discovery-server-sa
+  namespace: petclinic
+  labels:
+    app: discovery-server
+    tier: infrastructure
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: api-gateway-sa
+  namespace: petclinic
+  labels:
+    app: api-gateway
+    tier: infrastructure
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admin-server-sa
+  namespace: petclinic
+  labels:
+    app: admin-server
+    tier: infrastructure
+
+---
+# Business Services (Core Domain)
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: customers-service-sa
+  namespace: petclinic
+  labels:
+    app: customers-service
+    tier: business
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: vets-service-sa
+  namespace: petclinic
+  labels:
+    app: vets-service
+    tier: business
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: visits-service-sa
+  namespace: petclinic
+  labels:
+    app: visits-service
+    tier: business

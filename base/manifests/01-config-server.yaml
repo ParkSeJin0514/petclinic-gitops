@@ -24,6 +24,7 @@ spec:
         app: config-server
         tier: infrastructure
     spec:
+      serviceAccountName: config-server-sa
       containers:
         - name: config-server
           image: springcommunity/spring-petclinic-config-server:latest

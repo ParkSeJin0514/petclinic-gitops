@@ -24,6 +24,7 @@ spec:
         app: api-gateway
         tier: gateway
     spec:
+      serviceAccountName: api-gateway-sa
       containers:
         - name: api-gateway
           image: springcommunity/spring-petclinic-api-gateway:latest

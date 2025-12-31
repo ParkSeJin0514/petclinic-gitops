@@ -33,6 +33,7 @@ spec:
         tier: business
         version: v1
     spec:
+      serviceAccountName: customers-service-sa
       containers:
         - name: customers-service
           image: springcommunity/spring-petclinic-customers-service:latest
