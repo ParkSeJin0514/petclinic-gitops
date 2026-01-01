@@ -170,6 +170,17 @@ spec:
 
 > **참고**: 부하 테스트를 위해 maxReplicas를 10으로 설정
 
+### Health Check Probe 설정
+
+| 서비스 | livenessProbe | readinessProbe |
+|--------|---------------|----------------|
+| api-gateway | 200초 | 150초 |
+| customers-service | 200초 | 150초 |
+| visits-service | 200초 | 150초 |
+| vets-service | 200초 | 150초 |
+
+> **참고**: Spring Boot 앱 기동 시간을 고려하여 readinessProbe initialDelaySeconds를 150초로 설정
+
 ### ArgoCD ignoreDifferences 설정
 
 HPA와 ArgoCD selfHeal 충돌 방지:
