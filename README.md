@@ -204,6 +204,15 @@ nodeSelector:
   managed-by: karpenter
 ```
 
+### Karpenter Disruption 설정
+
+| 설정 | 값 | 설명 |
+|------|-----|------|
+| consolidationPolicy | WhenEmptyOrUnderutilized | 빈 노드 또는 저활용 노드 통합 |
+| consolidateAfter | 5m | 통합 대기 시간 |
+
+> **참고**: `WhenEmptyOrUnderutilized` 정책으로 저활용 노드의 Pod를 다른 노드로 이동 후 노드 삭제
+
 ## 📦 수동 배포
 
 ```bash
