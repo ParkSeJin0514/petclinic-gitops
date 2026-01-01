@@ -23,7 +23,7 @@ spec:
     kind: Deployment
     name: api-gateway
   minReplicas: 2
-  maxReplicas: 10
+  maxReplicas: 6
   metrics:
     - type: Resource
       resource:
@@ -64,7 +64,7 @@ spec:
     kind: Deployment
     name: customers-service
   minReplicas: 2
-  maxReplicas: 10
+  maxReplicas: 6
   metrics:
     - type: Resource
       resource:
@@ -105,7 +105,7 @@ spec:
     kind: Deployment
     name: visits-service
   minReplicas: 2
-  maxReplicas: 10
+  maxReplicas: 6
   metrics:
     - type: Resource
       resource:
@@ -146,7 +146,7 @@ spec:
     kind: Deployment
     name: vets-service
   minReplicas: 2
-  maxReplicas: 10
+  maxReplicas: 6
   metrics:
     - type: Resource
       resource:
