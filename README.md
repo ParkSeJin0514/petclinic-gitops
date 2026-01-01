@@ -163,12 +163,12 @@ spec:
 
 | 서비스 | minReplicas | maxReplicas | CPU 임계값 |
 |--------|-------------|-------------|------------|
-| api-gateway | 2 | 4 | 70% |
-| customers-service | 2 | 4 | 70% |
-| visits-service | 2 | 4 | 70% |
-| vets-service | 2 | 4 | 70% |
+| api-gateway | 2 | 10 | 70% |
+| customers-service | 2 | 10 | 70% |
+| visits-service | 2 | 10 | 70% |
+| vets-service | 2 | 10 | 70% |
 
-> **참고**: maxReplicas를 4로 제한하여 /24 서브넷 IP 고갈 방지
+> **참고**: 부하 테스트를 위해 maxReplicas를 10으로 설정
 
 ### ArgoCD ignoreDifferences 설정
 
