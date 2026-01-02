@@ -81,7 +81,7 @@ images:
     newTag: "30"
   - name: springcommunity/spring-petclinic-api-gateway
     newName: asia-northeast3-docker.pkg.dev/kdt2-final-project-t1/petclinic-msa/petclinic-api-gateway
-    newTag: "66"
+    newTag: "67"
   - name: springcommunity/spring-petclinic-admin-server
     newName: asia-northeast3-docker.pkg.dev/kdt2-final-project-t1/petclinic-msa/petclinic-admin-server
     newTag: "30"
