@@ -12,6 +12,7 @@ resources:
   - manifests/06-api-gateway.yaml
   - manifests/07-admin-server.yaml
   - manifests/08-hpa.yaml
+  - manifests/09-analysis-template.yaml
   - manifests/10-ingress.yaml
   - manifests/11-app-monitoring.yaml
   # kube-prometheus-stack: Terraform에서 Helm 설치, Ingress는 overlays에서 관리
