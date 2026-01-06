@@ -19,7 +19,7 @@ images:
     newTag: "34"
   - name: springcommunity/spring-petclinic-customers-service
     newName: 946775837287.dkr.ecr.ap-northeast-2.amazonaws.com/petclinic-msa/petclinic-customers-service
-    newTag: "34"
+    newTag: "32"
   - name: springcommunity/spring-petclinic-visits-service
     newName: 946775837287.dkr.ecr.ap-northeast-2.amazonaws.com/petclinic-msa/petclinic-visits-service
     newTag: "34"
