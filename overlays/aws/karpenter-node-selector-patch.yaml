@@ -29,9 +29,9 @@ spec:
       nodeSelector:
         managed-by: karpenter
 ---
-# Customers Service
-apiVersion: apps/v1
-kind: Deployment
+# Customers Service (Argo Rollout)
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
 metadata:
   name: customers-service
   namespace: petclinic
