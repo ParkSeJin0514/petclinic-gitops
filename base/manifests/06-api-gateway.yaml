@@ -30,7 +30,7 @@ spec:
       activeService: api-gateway
       previewService: api-gateway-preview
       autoPromotionEnabled: true
-      scaleDownDelaySeconds: 300
+      scaleDownDelaySeconds: 120
       previewReplicaCount: 2
       prePromotionAnalysis:
         templates:
