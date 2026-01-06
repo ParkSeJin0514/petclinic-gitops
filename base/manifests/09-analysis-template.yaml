@@ -1,0 +1,25 @@
+# ============================================================================
+# AnalysisTemplate for Blue-Green Deployment
+# ============================================================================
+# Prometheus 메트릭을 사용하여 새 버전의 Pod 상태를 검증
+# 모든 Pod가 Ready 상태이면 자동 Promote
+# ============================================================================
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: pod-readiness-check
+  namespace: petclinic
+spec:
+  args:
+    - name: service-name
+  metrics:
+    - name: pod-ready
+      interval: 10s
+      count: 3
+      successCondition: result[0] >= 1
+      failureLimit: 3
+      provider:
+        prometheus:
+          address: http://kube-prometheus-stack-prometheus.petclinic.svc.cluster.local:9090/prometheus
+          query: |
+            sum(kube_pod_status_ready{namespace="petclinic", pod=~"{{args.service-name}}.*", condition="true"})

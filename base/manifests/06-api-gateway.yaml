@@ -29,9 +29,15 @@ spec:
     blueGreen:
       activeService: api-gateway
       previewService: api-gateway-preview
-      autoPromotionEnabled: false
+      autoPromotionEnabled: true
       scaleDownDelaySeconds: 300
       previewReplicaCount: 2
+      prePromotionAnalysis:
+        templates:
+          - templateName: pod-readiness-check
+        args:
+          - name: service-name
+            value: api-gateway
 
   template:
     metadata:
