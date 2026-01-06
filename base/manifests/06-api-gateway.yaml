@@ -1,7 +1,14 @@
 ---
-# API Gateway Deployment
-apiVersion: apps/v1
-kind: Deployment
+# ============================================================================
+# API Gateway Rollout (Blue-Green 배포)
+# ============================================================================
+# Argo Rollouts를 사용한 Blue-Green 배포 전략
+# - 신버전 배포 시 Preview Service로 테스트
+# - 검증 후 Active Service로 전환
+# - 문제 시 즉시 롤백 가능
+# ============================================================================
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
 metadata:
   name: api-gateway
   namespace: petclinic
@@ -10,14 +17,22 @@ metadata:
     tier: gateway
 spec:
   replicas: 2
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
+  revisionHistoryLimit: 3
   selector:
     matchLabels:
       app: api-gateway
+
+  # ========================================================================
+  # Blue-Green 배포 전략
+  # ========================================================================
+  strategy:
+    blueGreen:
+      activeService: api-gateway
+      previewService: api-gateway-preview
+      autoPromotionEnabled: false
+      scaleDownDelaySeconds: 300
+      previewReplicaCount: 2
+
   template:
     metadata:
       labels:
@@ -33,6 +48,7 @@ spec:
             - name: http
               containerPort: 8080
               protocol: TCP
+
           resources:
             requests:
               cpu: 100m
@@ -41,7 +57,6 @@ spec:
               cpu: 500m
               memory: 768Mi
 
-          # Health Check (부하 시 타임아웃 방지를 위해 여유있게 설정)
           livenessProbe:
             httpGet:
               path: /actuator/health
@@ -50,6 +65,7 @@ spec:
             periodSeconds: 10
             timeoutSeconds: 10
             failureThreshold: 20
+
           readinessProbe:
             httpGet:
               path: /actuator/health
@@ -60,15 +76,10 @@ spec:
             failureThreshold: 10
 
           env:
-            # JVM 메모리 설정 (컨테이너 limit의 70%)
             - name: JAVA_OPTS
               value: "-Xmx512m -Xms256m"
-
-            # 프로필: kubernetes + mysql
             - name: SPRING_PROFILES_ACTIVE
               value: "kubernetes,mysql"
-
-            # ★ Eureka 서버 URL을 강제로 discovery-server로 고정
             - name: SPRING_APPLICATION_JSON
               value: |
                 {
@@ -80,17 +91,15 @@ spec:
                     }
                   }
                 }
-
-            # 서버 포트 고정
             - name: SERVER_PORT
               value: "8080"
-
-            # Config Server URL (이미 이렇게 쓰고 있었으면 그대로 둬도 됨)
             - name: CONFIG_SERVER_URL
               value: "http://config-server:8888"
 
 ---
-# API Gateway Service
+# ============================================================================
+# API Gateway Service (Active) - 운영 트래픽
+# ============================================================================
 apiVersion: v1
 kind: Service
 metadata:
@@ -98,6 +107,7 @@ metadata:
   namespace: petclinic
   labels:
     app: api-gateway
+    tier: gateway
 spec:
   selector:
     app: api-gateway
@@ -105,4 +115,28 @@ spec:
     - name: http
       port: 8080
       targetPort: 8080
+      protocol: TCP
+  type: ClusterIP
+
+---
+# ============================================================================
+# API Gateway Preview - 테스트용 (Blue-Green)
+# ============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway-preview
+  namespace: petclinic
+  labels:
+    app: api-gateway
+    tier: gateway
+    role: preview
+spec:
+  selector:
+    app: api-gateway
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
   type: ClusterIP
