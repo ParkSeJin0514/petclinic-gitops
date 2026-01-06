@@ -4,12 +4,12 @@
 # 트래픽 증가 시 자동으로 Pod 수를 조절
 # Karpenter와 연동하여 노드도 자동 확장됨
 #
-# 적용 대상: 비즈니스 서비스 + API Gateway
+# 적용 대상: 비즈니스 서비스 + API Gateway (Argo Rollouts)
 # 제외 대상: config-server, discovery-server, admin-server, monitoring
 # ============================================================================
 
 ---
-# API Gateway HPA
+# API Gateway HPA (Rollout)
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -19,8 +19,8 @@ metadata:
     app: api-gateway
 spec:
   scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
+    apiVersion: argoproj.io/v1alpha1
+    kind: Rollout
     name: api-gateway
   minReplicas: 2
   maxReplicas: 8
@@ -50,7 +50,7 @@ spec:
       selectPolicy: Max
 
 ---
-# Customers Service HPA
+# Customers Service HPA (Rollout)
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -60,8 +60,8 @@ metadata:
     app: customers-service
 spec:
   scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
+    apiVersion: argoproj.io/v1alpha1
+    kind: Rollout
     name: customers-service
   minReplicas: 2
   maxReplicas: 8
@@ -91,7 +91,7 @@ spec:
       selectPolicy: Max
 
 ---
-# Visits Service HPA
+# Visits Service HPA (Rollout)
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -101,8 +101,8 @@ metadata:
     app: visits-service
 spec:
   scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
+    apiVersion: argoproj.io/v1alpha1
+    kind: Rollout
     name: visits-service
   minReplicas: 2
   maxReplicas: 8
@@ -132,7 +132,7 @@ spec:
       selectPolicy: Max
 
 ---
-# Vets Service HPA
+# Vets Service HPA (Rollout)
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -142,8 +142,8 @@ metadata:
     app: vets-service
 spec:
   scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
+    apiVersion: argoproj.io/v1alpha1
+    kind: Rollout
     name: vets-service
   minReplicas: 2
   maxReplicas: 8
