@@ -1,37 +1,48 @@
 ---
 # ============================================================================
-# Customers Service Deployment
+# Customers Service Rollout (Blue-Green 배포)
 # ============================================================================
-# Spring Boot 마이크로서비스 - 고객 정보 관리
-# - MySQL Database 필요
-# - Eureka Discovery Server에 등록
-# - Config Server에서 설정 로드
+# Argo Rollouts를 사용한 Blue-Green 배포 전략
+# - 신버전 배포 시 Preview Service로 테스트
+# - 검증 후 Active Service로 전환
+# - 문제 시 즉시 롤백 가능
 # ============================================================================
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
 metadata:
   name: customers-service
   namespace: petclinic
   labels:
     app: customers-service
     tier: business
-    version: v1
 spec:
   replicas: 2
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 0
+  revisionHistoryLimit: 3
   selector:
     matchLabels:
       app: customers-service
+
+  # ========================================================================
+  # Blue-Green 배포 전략
+  # ========================================================================
+  strategy:
+    blueGreen:
+      # 현재 운영 중인 Service (트래픽 받음)
+      activeService: customers-service
+      # 신버전 테스트용 Service (트래픽 없음)
+      previewService: customers-service-preview
+      # 자동 승격 비활성화 (수동 승인 필요)
+      autoPromotionEnabled: false
+      # 롤백 대비 이전 버전 유지 시간 (5분)
+      scaleDownDelaySeconds: 300
+      # 전환 전 Preview ReplicaSet 준비 대기
+      previewReplicaCount: 2
+
   template:
     metadata:
       labels:
         app: customers-service
         tier: business
-        version: v1
     spec:
       serviceAccountName: customers-service-sa
       containers:
@@ -42,7 +53,7 @@ spec:
             - name: http
               containerPort: 8081
               protocol: TCP
-          
+
           # Resource Limits (Java 애플리케이션 최적화)
           resources:
             requests:
@@ -52,7 +63,7 @@ spec:
               cpu: 500m
               memory: 768Mi
 
-          # Health Checks (부하 시 타임아웃 방지를 위해 여유있게 설정)
+          # Health Checks
           livenessProbe:
             httpGet:
               path: /actuator/health
@@ -70,26 +81,17 @@ spec:
             periodSeconds: 10
             timeoutSeconds: 10
             failureThreshold: 10
-          
+
           # Environment Variables
           env:
-            # JVM 메모리 설정 (컨테이너 limit의 70%)
             - name: JAVA_OPTS
               value: "-Xmx512m -Xms256m"
-
-            # Spring Profile
             - name: SPRING_PROFILES_ACTIVE
               value: "kubernetes,mysql"
-            
-            # Server Port (강제 고정 - 중요!)
             - name: SERVER_PORT
               value: "8081"
-            
-            # Config Server (첫 번째 우선순위)
             - name: CONFIG_SERVER_URL
               value: "http://config-server:8888"
-            
-            # 🔥 Eureka 설정을 JSON으로 강제 적용
             - name: SPRING_APPLICATION_JSON
               value: |
                 {
@@ -104,43 +106,33 @@ spec:
                     }
                   }
                 }
-            
-            # Database Configuration (Secret에서 로드)
             - name: SPRING_DATASOURCE_URL
               valueFrom:
                 secretKeyRef:
                   name: petclinic-db-secret
                   key: SPRING_DATASOURCE_URL
-            
             - name: SPRING_DATASOURCE_USERNAME
               valueFrom:
                 secretKeyRef:
                   name: petclinic-db-secret
                   key: SPRING_DATASOURCE_USERNAME
-            
             - name: SPRING_DATASOURCE_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: petclinic-db-secret
                   key: SPRING_DATASOURCE_PASSWORD
-            
-            # JPA/Hibernate 설정
             - name: SPRING_JPA_HIBERNATE_DDL_AUTO
               value: "update"
-            
             - name: SPRING_JPA_SHOW_SQL
               value: "false"
-            
-            # Connection Pool 설정
             - name: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
               value: "10"
-            
             - name: SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE
               value: "5"
 
 ---
 # ============================================================================
-# Customers Service
+# Customers Service (Active) - 운영 트래픽
 # ============================================================================
 apiVersion: v1
 kind: Service
@@ -150,6 +142,29 @@ metadata:
   labels:
     app: customers-service
     tier: business
+spec:
+  selector:
+    app: customers-service
+  ports:
+    - name: http
+      port: 8081
+      targetPort: 8081
+      protocol: TCP
+  type: ClusterIP
+
+---
+# ============================================================================
+# Customers Service Preview - 테스트용 (Blue-Green)
+# ============================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: customers-service-preview
+  namespace: petclinic
+  labels:
+    app: customers-service
+    tier: business
+    role: preview
 spec:
   selector:
     app: customers-service
