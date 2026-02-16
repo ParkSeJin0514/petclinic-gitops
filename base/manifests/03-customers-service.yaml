@@ -63,24 +63,39 @@ spec:
               cpu: 500m
               memory: 768Mi
 
-          # Health Checks
+          # ============================================
+          # Health Check Probes
+          # ============================================
+          
+          # 1️⃣ startupProbe - 시작 완료 확인 (최대 5분 30초)
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8081
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 30
+          
+          # 2️⃣ livenessProbe - 생존 확인
           livenessProbe:
             httpGet:
               path: /actuator/health
               port: 8081
-            initialDelaySeconds: 200
+            initialDelaySeconds: 0
             periodSeconds: 10
-            timeoutSeconds: 10
-            failureThreshold: 20
+            timeoutSeconds: 5
+            failureThreshold: 3
 
+          # 3️⃣ readinessProbe - 트래픽 수신 준비 확인
           readinessProbe:
             httpGet:
               path: /actuator/health
               port: 8081
-            initialDelaySeconds: 150
-            periodSeconds: 10
-            timeoutSeconds: 10
-            failureThreshold: 10
+            initialDelaySeconds: 0
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
 
           # Environment Variables
           env:
